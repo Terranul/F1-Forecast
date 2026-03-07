@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Node Project Setup
 
 Please refer to the [sample project setup instructions here](https://www.students.cs.ubc.ca/~cs-304/resources/javascript-oracle-resources/node-setup.html#remote-deploy-item) for more in-depth instructions.
@@ -46,3 +47,8 @@ Execute the remote start script:
 ```bash
 ./remote-start.sh
 ```
+=======
+Project Description
+
+The domain of our project is in Sports, Fan Engagement and Community Building. Implementing a Formula 1 prediction platform providing Users with the chance to predict outcomes of race weekends throughout the formula 1 season, earning  points based on accuracy. Additionally, the application will allow multiple users to compete together by comparing their scores.
+>>>>>>> master
