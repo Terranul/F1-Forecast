@@ -11,7 +11,7 @@ Please refer to the [sample project setup instructions here](https://www.student
 
 ### 1. Create Environment File
 
-Create a `.env` file in the root directory of the project with the following contents:
+Create a `.env` file in the root directory of the project with the following contents: :
 
 ```
 # TODO: Edit the values below this line according to the given placeholders
