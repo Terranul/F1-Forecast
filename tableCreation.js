@@ -4,11 +4,11 @@ const tableCreations = [
 )`,
 
 `CREATE TABLE APP_USER (
-    id VARCHAR2(25),
+    app_userid VARCHAR2(25),
     dateoffirstprediction DATE,
     user_name VARCHAR2(50),
     streak INTEGER,
-    CONSTRAINT APP_USER_PK PRIMARY KEY (id, dateoffirstprediction)
+    CONSTRAINT APP_USER_PK PRIMARY KEY (app_userid, dateoffirstprediction)
 )`,
 
 `CREATE TABLE RACE_SESSION (
@@ -63,10 +63,10 @@ const tableCreations = [
     season NUMBER NOT NULL,
     trackname VARCHAR2(50) NOT NULL,
     dateoffirstprediction DATE NOT NULL,
-    id VARCHAR2(5),
+    app_userid VARCHAR2(25),
     CONSTRAINT PREDICTION_PK PRIMARY KEY (predictionid),
     CONSTRAINT PREDICTION_FK_RACE FOREIGN KEY (season, trackname) REFERENCES RACE_SESSION(season, trackname) ON DELETE CASCADE,
-    CONSTRAINT PREDICTION_FK_USER FOREIGN KEY (dateoffirstprediction, id) REFERENCES APP_USER(dateoffirstprediction, id) ON DELETE CASCADE
+    CONSTRAINT PREDICTION_FK_USER FOREIGN KEY (app_userid, dateoffirstprediction) REFERENCES APP_USER(app_userid, dateoffirstprediction) ON DELETE CASCADE
 )`,
 
 `CREATE TABLE CATEGORY (
@@ -92,10 +92,12 @@ const tableCreations = [
 )`,
 
 `CREATE TABLE FRIEND (
-    user1id VARCHAR2(5),
-    user2id VARCHAR2(5),
-    CONSTRAINT FRIEND_FK_USER1 FOREIGN KEY (user1id) REFERENCES APP_USER(id) ON DELETE CASCADE,
-    CONSTRAINT FRIEND_FK_USER2 FOREIGN KEY (user2id) REFERENCES APP_USER(id) ON DELETE CASCADE
+    user1id VARCHAR2(25),
+    user1_date DATE,
+    user2id VARCHAR2(25),
+    user2_date DATE,
+    CONSTRAINT FRIEND_FK_USER1 FOREIGN KEY (user1id, user1_date) REFERENCES APP_USER(app_userid, dateoffirstprediction) ON DELETE CASCADE,
+    CONSTRAINT FRIEND_FK_USER2 FOREIGN KEY (user2id, user2_date) REFERENCES APP_USER(app_userid, dateoffirstprediction) ON DELETE CASCADE
 )`,
 
 `CREATE TABLE RACE (
@@ -151,30 +153,34 @@ const tableCreations = [
 )`
 ];
 
+// CASCADE CONTRAINTS just means that if we delete a table that has other table still referencing it with foreign keys, we will first delete
+// the foreign key attributes that reference the table we are trying to delete, then we can drop the table with no issues.
+// this means we will be left with tables that are no longer connected by any foreign keys, but it's all good becuase we're deleting them too.
 const deleteStatements = [
-`DELETE FROM PREDICTIONSCORE;`,
-`DELETE FROM PREDICTIONCATEGORY;`,
-`DELETE FROM FRIEND;`,
-`DELETE FROM PREDICTION;`,
-`DELETE FROM RESULT;`,
-`DELETE FROM QUALIFYING;`,
-`DELETE FROM SPRINT;`,
-`DELETE FROM PRACTICE;`,
-`DELETE FROM RACE;`,
-`DELETE FROM DRIVER;`,
-`DELETE FROM DRIVERBYDEBUT;`,
-`DELETE FROM TEAMREF;`,
-`DELETE FROM TEAM;`,
-`DELETE FROM TEAMBYDEBUT;`,
-`DELETE FROM SCORE;`,
-`DELETE FROM RACE_SESSION;`,
-`DELETE FROM CATEGORY;`,
-`DELETE FROM APP_USER;`
+`DROP TABLE PREDICTIONSCORE CASCADE CONSTRAINTS`,
+`DROP TABLE PREDICTIONCATEGORY CASCADE CONSTRAINTS`,
+`DROP TABLE FRIEND CASCADE CONSTRAINTS`,
+`DROP TABLE PREDICTION CASCADE CONSTRAINTS`,
+`DROP TABLE RESULT CASCADE CONSTRAINTS`,
+`DROP TABLE QUALIFYING CASCADE CONSTRAINTS`,
+`DROP TABLE SPRINT CASCADE CONSTRAINTS`,
+`DROP TABLE PRACTICE CASCADE CONSTRAINTS`,
+`DROP TABLE RACE CASCADE CONSTRAINTS`,
+`DROP TABLE DRIVER CASCADE CONSTRAINTS`,
+`DROP TABLE DRIVERBYDEBUT CASCADE CONSTRAINTS`,
+`DROP TABLE TEAMREF CASCADE CONSTRAINTS`,
+`DROP TABLE TEAM CASCADE CONSTRAINTS`,
+`DROP TABLE TEAMBYDEBUT CASCADE CONSTRAINTS`,
+`DROP TABLE SCORE CASCADE CONSTRAINTS`,
+`DROP TABLE RACE_SESSION CASCADE CONSTRAINTS`,
+`DROP TABLE CATEGORY CASCADE CONSTRAINTS`,
+`DROP TABLE APP_USER CASCADE CONSTRAINTS`,
+`DROP TABLE TESTING CASCADE CONSTRAINTS`
 ];
 
 const demoInsertStatements = [
-`INSERT INTO APP_USER (id, dateoffirstprediction, user_name, streak) VALUES ('u01', DATE '2023-01-01', 'alice', 5)`,
-`INSERT INTO APP_USER (id, dateoffirstprediction, user_name, streak) VALUES ('u02', DATE '2023-01-02', 'bob', 3)`,
+`INSERT INTO APP_USER (app_userid, dateoffirstprediction, user_name, streak) VALUES ('u01', DATE '2023-01-01', 'alice', 5)`,
+`INSERT INTO APP_USER (app_userid, dateoffirstprediction, user_name, streak) VALUES ('u02', DATE '2023-01-02', 'bob', 3)`,
 
 `INSERT INTO RACE_SESSION (season, trackname, sessiondate) VALUES (2026, 'silverstone', DATE '2026-03-01')`,
 `INSERT INTO RACE_SESSION (season, trackname, sessiondate) VALUES (2026, 'monaco', DATE '2026-03-15')`,
@@ -194,8 +200,8 @@ const demoInsertStatements = [
 `INSERT INTO RACE (season, trackname) VALUES (2026, 'silverstone')`,
 `INSERT INTO RACE (season, trackname) VALUES (2026, 'monaco')`,
 
-`INSERT INTO PREDICTION (predictionid, date_filed, time_filed, season, trackname, dateoffirstprediction, id) VALUES ('p01', DATE '2026-03-05', TO_TIMESTAMP('2026-03-05 12:00:00', 'yyyy-mm-dd hh24:mi:ss'), 2026, 'silverstone', DATE '2023-01-01', 'u01')`,
-`INSERT INTO PREDICTION (predictionid, date_filed, time_filed, season, trackname, dateoffirstprediction, id) VALUES ('p02', DATE '2026-03-06', TO_TIMESTAMP('2026-03-06 14:00:00', 'yyyy-mm-dd hh24:mi:ss'), 2026, 'monaco', DATE '2023-01-02', 'u02')`,
+`INSERT INTO PREDICTION (predictionid, date_filed, time_filed, season, trackname, dateoffirstprediction, app_userid) VALUES ('p01', DATE '2026-03-05', TO_TIMESTAMP('2026-03-05 12:00:00', 'yyyy-mm-dd hh24:mi:ss'), 2026, 'silverstone', DATE '2023-01-01', 'u01')`,
+`INSERT INTO PREDICTION (predictionid, date_filed, time_filed, season, trackname, dateoffirstprediction, app_userid) VALUES ('p02', DATE '2026-03-06', TO_TIMESTAMP('2026-03-06 14:00:00', 'yyyy-mm-dd hh24:mi:ss'), 2026, 'monaco', DATE '2023-01-02', 'u02')`,
 
 `INSERT INTO CATEGORY (id, name) VALUES ('c01', 'speed')`,
 `INSERT INTO CATEGORY (id, name) VALUES ('c02', 'strategy')`,
@@ -209,7 +215,7 @@ const demoInsertStatements = [
 `INSERT INTO PREDICTIONSCORE (predictionid, ranking, acc) VALUES ('p01', 1, 'a')`,
 `INSERT INTO PREDICTIONSCORE (predictionid, ranking, acc) VALUES ('p02', 2, 'b')`,
 
-`INSERT INTO FRIEND (user1id, user2id) VALUES ('u01', 'u02')`,
+`INSERT INTO FRIEND (user1id, user1_date, user2id, user2_date) VALUES ('u01', DATE '2023-01-01', 'u02', DATE '2023-01-02')`,
 
 `INSERT INTO QUALIFYING (season, trackname, round) VALUES (2026, 'silverstone', 1)`,
 `INSERT INTO QUALIFYING (season, trackname, round) VALUES (2026, 'monaco', 1)`,

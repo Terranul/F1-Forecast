@@ -78,15 +78,6 @@ async function testOracleConnection() {
     });
 }
 
-async function fetchDemotableFromDb() {
-    return await withOracleDB(async (connection) => {
-        const result = await connection.execute('SELECT * FROM DEMOTABLE');
-        return result.rows;
-    }).catch(() => {
-        return [];
-    });
-}
-
 async function initiateDemotable() {
     return await withOracleDB(async (connection) => {
         console.log("process of deleting all existing sets")
@@ -96,6 +87,7 @@ async function initiateDemotable() {
                 console.log(statement)
             } catch (error) {
                 console.log(`The deletion statement '${statement}' tried to delete a nonexisting table. Skipping deletion of this table.`)
+                console.log(error)
             }
         }
         console.log("moving to table creation")
@@ -121,60 +113,77 @@ async function testInsert() {
 
 // function to insert demo data for database testing purposes. After using, make sure to delete the call. Or don't I don't really care
 async function insertDemoData() {
+    console.log("beginning inserting values")
     await withOracleDB(async (connection) => {
         for(const insert of tableCreation.demoInsertStatements) {
             try {
                 await connection.execute(insert);
+                console.log(insert)
             } catch(err) {
-                console.log(`Issue inserting values: ${err}`);
+                console.log(`Issue inserting values: ${err} at insert statement: ${insert}`);
             }
         }
     })
+    console.log("completed inserting values")
 }
 
-async function insertDemotable(id, name) {
+// tableName: name of the table, make sure all caps
+// value: object mapping each attribute: {id: "id", name: "name"}
+async function insertToTable(tableName, value) {
+    const insertStatement = extractInsertStatement(tableName, value)
     return await withOracleDB(async (connection) => {
-        const result = await connection.execute(
-            `INSERT INTO DEMOTABLE (id, name) VALUES (:id, :name)`,
-            [id, name],
+        await connection.execute(
+            insertStatement,
+            value,
             { autoCommit: true }
-        );
-
-        return result.rowsAffected && result.rowsAffected > 0;
-    }).catch(() => {
-        return false;
+        )
     });
 }
 
-async function updateNameDemotable(oldName, newName) {
-    return await withOracleDB(async (connection) => {
-        const result = await connection.execute(
-            `UPDATE DEMOTABLE SET name=:newName where name=:oldName`,
-            [newName, oldName],
-            { autoCommit: true }
-        );
-
-        return result.rowsAffected && result.rowsAffected > 0;
-    }).catch(() => {
-        return false;
-    });
+function extractInsertStatement(tableName, value) {
+    // match the form ":id, :name"
+    let mappingString = ""
+    for (const key of Object.keys(value)) {
+        mappingString += `:${key},`
+    }
+    mappingString = mappingString.slice(0, -1); // removes the ending ","
+    const cleanMapping = mappingString.replaceAll(":", "");
+    console.log(`INSERT INTO ${tableName} (${cleanMapping}) VALUES (${mappingString})`)
+    return `INSERT INTO ${tableName} (${cleanMapping}) VALUES (${mappingString})`;
 }
 
-async function countDemotable() {
-    return await withOracleDB(async (connection) => {
-        const result = await connection.execute('SELECT Count(*) FROM DEMOTABLE');
-        return result.rows[0][0];
-    }).catch(() => {
-        return -1;
-    });
+// link to the docs for return type: https://node-oracledb.readthedocs.io/en/v6.10.0/user_guide/sql_execution.html
+async function executeSql(statement) {
+    try {
+        return await withOracleDB(async (connection) => {
+            return connection.execute(statement);
+        });
+    } catch (err) {
+        console.error("Issue with the formatting in sql entry:" + err);
+        return null;
+    }
 }
+
+// work in progress, I'm not even sure if this is necessary, just executing sql might be easier
+async function updateTable(tableName, attribute, newValue, primaryKey) {
+    const updateStatement = ``
+}
+
+function extractWhereClause(primaryKey) {
+    let mappingString = "";
+    for (const key of Object.keys(primaryKey)) {
+        const selectKey = ` ${key} = :${primaryKey[key]} AND`
+        mappingString += selectKey;
+    }
+    // there will be an extra " AND" at the end
+    return "WHERE" + mappingString.trim(0, -4);
+}
+
 
 module.exports = {
     testOracleConnection,
-    fetchDemotableFromDb,
     initiateDemotable, 
-    insertDemotable, 
-    updateNameDemotable, 
-    countDemotable,
-    insertDemoData
+    insertDemoData,
+    insertToTable,
+    executeSql
 };
