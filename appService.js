@@ -35,6 +35,7 @@ async function closePoolAndExit() {
         process.exit(1);
     }
 }
+// testing
 
 initializeConnectionPool();
 
