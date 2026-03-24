@@ -15,7 +15,7 @@ router.get('/check-db-connection', async (req, res) => {
     }
 });
 
-router.get('/demotable', async (req, res) => {
+router.get('/demotable', async (req, res) => {-
     // return nothing becuase we don't have anything to fetch yet
     res.json({});
 });
@@ -26,6 +26,7 @@ router.post("/initiate-demotable", async (req, res) => {
     console.log('finished inserting demotables')
     if (true) {
         await appService.insertDemoData()
+        // now test the db by inserting data after the fact 
         await appService.insertToTable("CATEGORY", {id: "c03", name: "testing"});
         res.json({ success: true });
     } else {
