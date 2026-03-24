@@ -16,8 +16,8 @@ router.get('/check-db-connection', async (req, res) => {
 });
 
 router.get('/demotable', async (req, res) => {
-    const tableContent = await appService.fetchDemotableFromDb();
-    res.json({data: tableContent});
+    // return nothing becuase we don't have anything to fetch yet
+    res.json({});
 });
 
 router.post("/initiate-demotable", async (req, res) => {
