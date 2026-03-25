@@ -1,6 +1,9 @@
 const oracledb = require('oracledb');
 const loadEnvFile = require('./utils/envUtil');
 
+// tells the db that when sending the result of a SELECT query, send the results in a mapped object format: {id: 2, name: ""}
+oracledb.outFormat = oracledb.OUT_FORMAT_OBJECT
+
 const envVariables = loadEnvFile('./.env');
 // no es modules, so require statements are necessary
 const tableCreation = require("./tableCreation");
@@ -117,7 +120,7 @@ async function insertDemoData() {
     await withOracleDB(async (connection) => {
         for(const insert of tableCreation.demoInsertStatements) {
             try {
-                await connection.execute(insert);
+                await connection.execute(insert, {}, { autoCommit: true });
                 console.log(insert)
             } catch(err) {
                 console.log(`Issue inserting values: ${err} at insert statement: ${insert}`);
@@ -153,6 +156,16 @@ function extractInsertStatement(tableName, value) {
 }
 
 // link to the docs for return type: https://node-oracledb.readthedocs.io/en/v6.10.0/user_guide/sql_execution.html
+// example: after executing SELECT * FROM SPRINT you should expect to get the structure:
+/*
+    {
+        metaData: [ { name: 'SEASON' }, { name: 'TRACKNAME' } ],
+        rows: [
+            { SEASON: 2026, TRACKNAME: 'monaco' },
+            { SEASON: 2026, TRACKNAME: 'silverstone' }
+        ]
+     }
+*/
 async function executeSql(statement) {
     try {
         return await withOracleDB(async (connection) => {
