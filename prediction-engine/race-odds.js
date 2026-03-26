@@ -53,3 +53,7 @@ async function calculateDriverOddsForRace(track_name, season) {
     }
     return master.formatOdds(oddsData)
 }
+
+module.exports = {
+    calculateDriverOddsForRace
+}
