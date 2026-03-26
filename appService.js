@@ -177,21 +177,6 @@ async function executeSql(statement) {
     }
 }
 
-// work in progress, I'm not even sure if this is necessary, just executing sql might be easier
-async function updateTable(tableName, attribute, newValue, primaryKey) {
-    const updateStatement = ``
-}
-
-function extractWhereClause(primaryKey) {
-    let mappingString = "";
-    for (const key of Object.keys(primaryKey)) {
-        const selectKey = ` ${key} = :${primaryKey[key]} AND`
-        mappingString += selectKey;
-    }
-    // there will be an extra " AND" at the end
-    return "WHERE" + mappingString.trim(0, -4);
-}
-
 
 module.exports = {
     testOracleConnection,
