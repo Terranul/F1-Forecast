@@ -15,14 +15,21 @@ router.get('/check-db-connection', async (req, res) => {
     }
 });
 
-router.get('/demotable', async (req, res) => {
-    const tableContent = await appService.fetchDemotableFromDb();
-    res.json({data: tableContent});
+router.get('/demotable', async (req, res) => {-
+    // return nothing becuase we don't have anything to fetch yet
+    res.json({});
 });
 
 router.post("/initiate-demotable", async (req, res) => {
+    console.log('going to insert demotables')
     const initiateResult = await appService.initiateDemotable();
-    if (initiateResult) {
+    console.log('finished inserting demotables')
+    if (true) {
+        await appService.insertDemoData()
+        // now test the db by inserting data after the fact 
+        await appService.insertToTable("CATEGORY", {id: "c03", name: "testing"});
+        const result = await appService.executeSql("SELECT * FROM SPRINT")
+        console.log(result)
         res.json({ success: true });
     } else {
         res.status(500).json({ success: false });
