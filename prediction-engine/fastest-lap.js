@@ -1,66 +1,81 @@
 const appService = require('../appService');
-const master = require('./odds-calculator')
+const master = require('./odds-calculator');
 
-const MAX_RACES_TO_CONSIDER = 5
+const MAX_RACES_TO_CONSIDER = 5;
 
-// the odds for betting the over/under on the avg lap time
-const BASE_BET_VALUE_ = 1.5
+// base bet value for over/under on total circuit time
+const BASE_BET_VALUE = 1.5;
 
-// takes the average of all lap times for a specific course
-async function getAverageLapTime(season, trackName) {
-    const sqlAverageTime = `SELECT AVG(TOTALTIME)
-                            FROM RESULTS r NATURAL JOIN RACE_SESSION s
-                            WHERE s.SEASON=${season} AND s.TRACKNAME=${trackName}
-                            ORDER BY s.SEASON DESC
-                            LIMIT ${MAX_RACES_TO_CONSIDER}`
-    const result = await appService.executeSql(sqlAverageTime)
-    return results.rows[0][AVG(TOTALTIME)]
-}   
-
-async function getLowestLapTime(season, trackName) {
-    const sqlLowestTime = `SELECT MIN(TOTALTIME)
-                            FROM RESULTS r NATURAL JOIN RACE_SESSION s
-                            WHERE s.SEASON=${season} AND s.TRACKNAME=${trackName}
-                            ORDER BY s.SEASON DESC
-                            LIMIT ${MAX_RACES_TO_CONSIDER}`
-    const result = await appService.executeSql(sqlLowestTime)
-    return results.rows[0][MIN(TOTALTIME)]
+// Gets the average total circuit time for a specific season and track
+async function getAverageCircuitTime(season, trackName) {
+    const sql = `
+        SELECT AVG(TOTALTIME) AS avg_total_time
+        FROM RESULTS r 
+        NATURAL JOIN RACE_SESSION s
+        WHERE s.SEASON=${season} AND s.TRACKNAME='${trackName}'
+        ORDER BY s.SEASON DESC
+        FETCH FIRST ${MAX_RACES_TO_CONSIDER} ROWS ONLY
+    `;
+    const result = await appService.executeSql(sql);
+    return result.rows[0]['AVG_TOTAL_TIME'];
 }
 
-async function getFastestLapTime(season, trackName) {
-    const sqlFastestTime = `SELECT MAX(TOTALTIME)
-                            FROM RESULTS r NATURAL JOIN RACE_SESSION s
-                            WHERE s.SEASON=${season} AND s.TRACKNAME=${trackName}
-                            ORDER BY s.SEASON DESC
-                            LIMIT ${MAX_RACES_TO_CONSIDER}`
-    const result = await appService.executeSql(sqlFastestTime)
-    return results.rows[0][MIN(TOTALTIME)]
+/**
+ * Gets the minimum total circuit time for a specific season and track
+ */
+async function getLowestCircuitTime(season, trackName) {
+    const sql = `
+        SELECT MIN(TOTALTIME) AS min_total_time
+        FROM RESULTS r 
+        NATURAL JOIN RACE_SESSION s
+        WHERE s.SEASON=${season} AND s.TRACKNAME='${trackName}'
+        ORDER BY s.SEASON DESC
+        FETCH FIRST ${MAX_RACES_TO_CONSIDER} ROWS ONLY
+    `;
+    const result = await appService.executeSql(sql);
+    return result.rows[0]['MIN_TOTAL_TIME'];
 }
 
-// extremityRation represents how much more you will win if you bet under on the slowest lap, or over on the fastest lap
-async function generateLapOdds(extremityRatio, season, trackName) {
-    // only the avg will have both an over and under, the slowest lap time will have an under, and the fastest will have an over
-    const fastestTime = await getFastestLapTime(season, trackName);
-    const avgTime = await getAverageLapTime(season, trackName);
-    const slowestTime = await getLowestLapTime(season, trackName);
+// Gets the maximum total circuit time for a specific season and track
+async function getHighestCircuitTime(season, trackName) {
+    const sql = `
+        SELECT MAX(TOTALTIME) AS max_total_time
+        FROM RESULTS r 
+        NATURAL JOIN RACE_SESSION s
+        WHERE s.SEASON=${season} AND s.TRACKNAME='${trackName}'
+        ORDER BY s.SEASON DESC
+        FETCH FIRST ${MAX_RACES_TO_CONSIDER} ROWS ONLY
+    `;
+    const result = await appService.executeSql(sql);
+    return result.rows[0]['MAX_TOTAL_TIME'];
+}
+
+/**
+ * Generates over/under odds based on total circuit times
+ * extremityRatio: multiplier for extreme bets (fastest/slowest)
+ */
+async function generateCircuitTimeOdds(extremityRatio, season, trackName) {
+    const fastestCircuitTime = await getHighestCircuitTime(season, trackName);
+    const avgCircuitTime = await getAverageCircuitTime(season, trackName);
+    const slowestCircuitTime = await getLowestCircuitTime(season, trackName);
+
     return {
-        fastestLap: {
-            value: fastestTime,
-            over: BASE_BET_VALUE_*extremityRatio,
+        fastestCircuit: {
+            value: fastestCircuitTime,
+            over: BASE_BET_VALUE * extremityRatio,
         },
-        slowestLap: {
-            value: slowestTime,
-            under: BASE_BET_VALUE_*extremityRatio,
+        slowestCircuit: {
+            value: slowestCircuitTime,
+            under: BASE_BET_VALUE * extremityRatio,
         },
-        avgLap: {
-            value: avgTime,
-            over: BASE_BET_VALUE_,
-            under: BASE_BET_VALUE_,
+        avgCircuit: {
+            value: avgCircuitTime,
+            over: BASE_BET_VALUE,
+            under: BASE_BET_VALUE,
         }
-    }
+    };
 }
 
 module.exports = {
-    generateLapOdds
-}
-
+    generateCircuitTimeOdds
+};
