@@ -7,7 +7,6 @@ const MAX_RACES_TO_CONSIDER = 5
 const BASE_BET_VALUE_ = 1.5
 
 // takes the average of all lap times for a specific course
-//
 async function getAverageLapTime(season, trackName) {
     const sqlAverageTime = `SELECT AVG(TOTALTIME)
                             FROM RESULTS r NATURAL JOIN RACE_SESSION s
@@ -59,6 +58,9 @@ async function generateLapOdds(extremityRatio, season, trackName) {
             under: BASE_BET_VALUE_,
         }
     }
+}
 
+module.exports = {
+    generateLapOdds
 }
 

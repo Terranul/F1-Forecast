@@ -100,6 +100,7 @@ async function initiateDemotable() {
                 console.log("creating table: " + table)
             } catch(err) {
                 console.log("table already exists. No need to create a new one:" + table)
+                console.log(err)
             }
         }
         return true
