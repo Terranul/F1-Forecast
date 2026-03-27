@@ -169,10 +169,10 @@ async function generateCircuitTimeOdds(extremityRatio, season, trackName) {
 
 // generate odds for whether a player will finish off of the podium ----------------------------------------------------------------
 
-async function getPodiumDrivers() {
+async function getPodiumDrivers(season) {
     const sql = `SELECT d.name, COUNT(*) AS podiums
-                 FROM RESULT r NATURAL JOIN DRIVER d
-                 WHERE r.position <= 3
+                 FROM RESULT r NATURAL JOIN DRIVER d NATURAL JOIN RACE_SESSION s
+                 WHERE r.position <= 3 AND s.season=${season}
                  GROUP BY d.name
                  HAVING COUNT(*) >= 5
                  ORDER BY podiums DESC`
@@ -181,9 +181,9 @@ async function getPodiumDrivers() {
 }
 
 // odds represent the odds for a driver finishing off of the podium.
-async function getOddsForPodiums() {
+async function getOddsForPodiums(season) {
     const returnData = []
-    const podiumData = await getPodiumDrivers();
+    const podiumData = await getPodiumDrivers(season);
     for (driver of podiumData) {
         returnData.push({
             name: DRIVER.NAME,

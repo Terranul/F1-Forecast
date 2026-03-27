@@ -1,7 +1,12 @@
 const oddsGenerator = require("./prediction-engine/race-odds")
 
 async function getPodiumOdds(req, res) {
-    const oddsData = await oddsGenerator.getOddsForPodiums()
+     const season = req.body.season
+    if (season === undefined) {
+         req.status(400).json({errorMsg: "missing a required field"})
+         return
+    }
+    const oddsData = await oddsGenerator.getOddsForPodiums(season)
     res.status(200).json(oddsData);
 }
 
