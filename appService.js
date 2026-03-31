@@ -99,7 +99,7 @@ async function initiateDemotable() {
                 await connection.execute(table)
                 console.log("creating table: " + table)
             } catch(err) {
-                console.log("table already exists. No need to create a new one:" + table)
+                console.log(err + "Issue on table: " + table );
             }
         }
         return true
