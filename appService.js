@@ -2,7 +2,7 @@ const oracledb = require('oracledb');
 const loadEnvFile = require('./utils/envUtil');
 
 // tells the db that when sending the result of a SELECT query, send the results in a mapped object format: {id: 2, name: ""}
-oracledb.outFormat = oracledb.OUT_FORMAT_OBJECT
+oracledb.outFormat = oracledb.OUT_FORMAT_OBJECT;
 
 const envVariables = loadEnvFile('./.env');
 // no es modules, so require statements are necessary
@@ -128,6 +128,7 @@ async function insertDemoData() {
         }
     })
     console.log("completed inserting values")
+    await testSqlStatements();
 }
 
 // tableName: name of the table, make sure all caps
@@ -177,11 +178,22 @@ async function executeSql(statement) {
     }
 }
 
+async function testSqlStatements() {
+    console.log("beginning testing sql statements \n")
+    await withOracleDB(async (connection) => {
+        for (const query of tableCreation.testsql) {
+            const result = await connection.execute(query);
+            console.log(result);
+        }
+    })
+}
+
 
 module.exports = {
     testOracleConnection,
     initiateDemotable, 
     insertDemoData,
     insertToTable,
-    executeSql
+    executeSql,
+    testSqlStatements
 };

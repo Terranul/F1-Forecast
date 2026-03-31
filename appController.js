@@ -26,8 +26,10 @@ router.post("/initiate-demotable", async (req, res) => {
     const initiateResult = await appService.initiateDemotable();
     console.log('finished inserting demotables')
     if (true) {
-        //await appService.insertDemoData()
-        // now test the db by inserting data after the fact 
+        await appService.insertDemoData()
+        // now test the db by inserting data after the fac
+        // awt
+        await appService.testSqlStatements()
         await f1apiService.loadAllData(2026);
         await appService.insertToTable("CATEGORY", {id: "c03", name: "testing"});
         const result = await appService.executeSql("SELECT * FROM SPRINT")

@@ -8,7 +8,7 @@ const tableCreations = [
     dateoffirstprediction DATE,
     user_name VARCHAR2(50),
     streak INTEGER,
-    CONSTRAINT APP_USER_PK PRIMARY KEY (app_userid, dateoffirstprediction)
+    CONSTRAINT APP_USER_PK PRIMARY KEY (app_userid)
 )`,
 
     `CREATE TABLE RACE_SESSION (
@@ -26,16 +26,14 @@ const tableCreations = [
     CONSTRAINT TEAM_PK PRIMARY KEY (teamid)
 )`,
 
-
-
     `CREATE TABLE DRIVER (
-    driverid VARCHAR2(10),
+    driverid VARCHAR2(5),
     accumulatedpoints INTEGER,
     drivernumber INTEGER,
     firstname VARCHAR2(25),
     lastname VARCHAR2(25),
     nationality VARCHAR2(25),
-    teamid VARCHAR2(10),
+    teamid VARCHAR2(25),
     dateofbirth DATE,
     CONSTRAINT DRIVER_PK PRIMARY KEY (driverid),
     CONSTRAINT DRIVER_FK_TEAM FOREIGN KEY (teamid) REFERENCES TEAM(teamid) ON DELETE CASCADE
@@ -50,30 +48,49 @@ const tableCreations = [
     CONSTRAINT SCORE_PK PRIMARY KEY (ranking, acc)
 )`,
 
+`CREATE TABLE CATEGORY (
+    categoryid VARCHAR2(5),
+    name VARCHAR2(50),
+    CONSTRAINT CATEGORY_PK PRIMARY KEY (categoryid)
+)`,
+
+`CREATE TABLE RESULT (
+    driveroftheday VARCHAR2(50),
+    pitstops INTEGER,
+    position INTEGER,
+    totaltime INTERVAL DAY TO SECOND,
+    season NUMBER NOT NULL,
+    trackname VARCHAR2(50) NOT NULL,
+    driverid VARCHAR2(5) NOT NULL,
+    CONSTRAINT RESULT_PK_BASE PRIMARY KEY (position, season, trackname),
+    CONSTRAINT RESULT_FK_RACE_SESSION_BASE FOREIGN KEY (season, trackname) REFERENCES RACE_SESSION(season, trackname) ON DELETE CASCADE,
+    CONSTRAINT RESULT_FK_DRIVER_BASE FOREIGN KEY (driverid) REFERENCES DRIVER(driverid) ON DELETE CASCADE
+)`,
+
+`CREATE TABLE TAKEPART (
+    season NUMBER,
+    trackname VARCHAR2(50),
+    driverid VARCHAR2(5)
+    CONSTRAINT TAKEPART_PK PRIMARY KEY (season, trackname, driverid),
+    CONSTRAINT TAKEPART_FK_RACE_SESSION FOREIGN KEY (season, trackname) REFERENCES RACE_SESSION(season, trackname) ON DELETE CASCADE,
+    CONSTRAINT TAKEPART_FK_DRIVER FOREIGN KEY (driverid) REFERENCES DRIVER(driverid) ON DELETE CASCADE
+)`
+
     `CREATE TABLE PREDICTION (
     predictionid VARCHAR2(5),
+    categoryid VARCHAR2(5),
+    prediction_value VARCHAR2(10),
     date_filed DATE NOT NULL,
     time_filed TIMESTAMP(6) NOT NULL,
     season NUMBER NOT NULL,
     trackname VARCHAR2(50) NOT NULL,
-    dateoffirstprediction DATE NOT NULL,
+    driverid VARCHAR2(5),
     app_userid VARCHAR2(25),
     CONSTRAINT PREDICTION_PK PRIMARY KEY (predictionid),
-    CONSTRAINT PREDICTION_FK_RACE FOREIGN KEY (season, trackname) REFERENCES RACE_SESSION(season, trackname) ON DELETE CASCADE,
-    CONSTRAINT PREDICTION_FK_USER FOREIGN KEY (app_userid, dateoffirstprediction) REFERENCES APP_USER(app_userid, dateoffirstprediction) ON DELETE CASCADE
-)`,
-
-    `CREATE TABLE CATEGORY (
-    id VARCHAR2(5),
-    name VARCHAR2(50),
-    CONSTRAINT CATEGORY_PK PRIMARY KEY (id)
-)`,
-
-    `CREATE TABLE PREDICTIONCATEGORY (
-    predictionid VARCHAR2(5),
-    id VARCHAR2(5),
-    CONSTRAINT PREDICTIONCATEGORY_PK PRIMARY KEY (predictionid, id),
-    CONSTRAINT PREDICTIONCATEGORY_FK FOREIGN KEY (predictionid) REFERENCES PREDICTION(predictionid) ON DELETE CASCADE
+    CONSTRAINT PREDICTION_FK_CATE FOREIGN KEY (categoryid) REFERENCES CATEGORY(categoryid) ON DELETE CASCADE,
+    CONSTRAINT PREDICTION_FK_DRVR FOREIGN KEY (driverid) REFERENCES DRIVER(driverid) ON DELETE CASCADE,
+    CONSTRAINT PREDICTION_FK_SESS FOREIGN KEY (season, trackname) REFERENCES RACE_SESSION(season, trackname) ON DELETE CASCADE,
+    CONSTRAINT PREDICTION_FK_USER FOREIGN KEY (app_userid) REFERENCES APP_USER(app_userid) ON DELETE CASCADE
 )`,
 
     `CREATE TABLE PREDICTIONSCORE (
@@ -87,11 +104,10 @@ const tableCreations = [
 
     `CREATE TABLE FRIEND (
     user1id VARCHAR2(25),
-    user1_date DATE,
     user2id VARCHAR2(25),
-    user2_date DATE,
-    CONSTRAINT FRIEND_FK_USER1 FOREIGN KEY (user1id, user1_date) REFERENCES APP_USER(app_userid, dateoffirstprediction) ON DELETE CASCADE,
-    CONSTRAINT FRIEND_FK_USER2 FOREIGN KEY (user2id, user2_date) REFERENCES APP_USER(app_userid, dateoffirstprediction) ON DELETE CASCADE
+    CONSTRAINT FRIEND_FK_USER1 FOREIGN KEY (user1id) REFERENCES APP_USER(app_userid) ON DELETE CASCADE,
+    CONSTRAINT FRIEND_FK_USER2 FOREIGN KEY (user2id) REFERENCES APP_USER(app_userid) ON DELETE CASCADE,
+    CONSTRAINT FRIEND_PK PRIMARY KEY (user1id, user2id)
 )`,
 
     `CREATE TABLE RACE (
@@ -111,7 +127,7 @@ const tableCreations = [
     `CREATE TABLE QUALIFYING (
     season NUMBER,
     trackname VARCHAR2(50),
-    qualyfyingdate NUMBER,
+    qualifyingdate NUMBER,
     CONSTRAINT QUALIFYING_PK PRIMARY KEY (season, trackname),
     CONSTRAINT QUALIFYING_FK_RACE_SESSION FOREIGN KEY (season, trackname) REFERENCES RACE_SESSION(season, trackname) ON DELETE CASCADE
 )`,
@@ -126,7 +142,6 @@ const tableCreations = [
 
     `CREATE TABLE RACE_RESULT (
     type VARCHAR2(10), 
-    CONSTRAINT TYPE_CONSTRAINT CHECK (type IN ('QUALIFYING', 'RACE', 'SPRINT', 'PRACTICE')),
     pitstops INTEGER,
     position INTEGER,
     totaltime INTERVAL DAY TO SECOND,
@@ -142,7 +157,6 @@ const tableCreations = [
 
 `CREATE TABLE QUALI_RESULT (
     type VARCHAR2(10), 
-    CONSTRAINT QUALI_TYPE_CONSTRAINT CHECK (type IN ('QUALIFYING', 'RACE', 'SPRINT', 'PRACTICE')),
     position INTEGER,
     season NUMBER NOT NULL,
     trackname VARCHAR2(50) NOT NULL,
@@ -158,9 +172,8 @@ const tableCreations = [
 )`,
      
 
-`CREATE TABLE SPRINTRESULT (
+`CREATE TABLE SPRINT_RESULT (
     type VARCHAR2(10), 
-    CONSTRAINT SPRINTRES_TYPE_CONSTRAINT CHECK (type IN ('QUALIFYING', 'RACE', 'SPRINT', 'PRACTICE')),
     position INTEGER,
     totaltime INTERVAL DAY TO SECOND,
     season NUMBER NOT NULL,
@@ -179,7 +192,6 @@ const tableCreations = [
 // this means we will be left with tables that are no longer connected by any foreign keys, but it's all good becuase we're deleting them too.
 const deleteStatements = [
     `DROP TABLE PREDICTIONSCORE CASCADE CONSTRAINTS`,
-    `DROP TABLE PREDICTIONCATEGORY CASCADE CONSTRAINTS`,
     `DROP TABLE FRIEND CASCADE CONSTRAINTS`,
     `DROP TABLE PREDICTION CASCADE CONSTRAINTS`,
     `DROP TABLE RESULT CASCADE CONSTRAINTS`,
@@ -188,10 +200,7 @@ const deleteStatements = [
     `DROP TABLE PRACTICE CASCADE CONSTRAINTS`,
     `DROP TABLE RACE CASCADE CONSTRAINTS`,
     `DROP TABLE DRIVER CASCADE CONSTRAINTS`,
-    `DROP TABLE DRIVERBYDEBUT CASCADE CONSTRAINTS`,
-    `DROP TABLE TEAMREF CASCADE CONSTRAINTS`,
     `DROP TABLE TEAM CASCADE CONSTRAINTS`,
-    `DROP TABLE TEAMBYDEBUT CASCADE CONSTRAINTS`,
     `DROP TABLE SCORE CASCADE CONSTRAINTS`,
     `DROP TABLE RACE_SESSION CASCADE CONSTRAINTS`,
     `DROP TABLE CATEGORY CASCADE CONSTRAINTS`,
@@ -200,62 +209,107 @@ const deleteStatements = [
     `DROP TABLE SPRINT_RESULT CASCADE CONSTRAINTS`,
     `DROP TABLE QUALI_RESULT CASCADE CONSTRAINTS`,
     `DROP TABLE RACE_RESULT CASCADE CONSTRAINTS`,
+    `DROP TABLE TAKEPART CASCADE CONSTRAINTS`,
 ];
 
 const demoInsertStatements = [
-    `INSERT INTO APP_USER (app_userid, dateoffirstprediction, user_name, streak) VALUES ('u01', DATE '2023-01-01', 'alice', 5)`,
-    `INSERT INTO APP_USER (app_userid, dateoffirstprediction, user_name, streak) VALUES ('u02', DATE '2023-01-02', 'bob', 3)`,
+    // APP_USER
+    `INSERT INTO APP_USER (app_userid, dateoffirstprediction, user_name, streak) VALUES ('u01', DATE '2026-01-01', 'Alice', 5)`,
+    `INSERT INTO APP_USER (app_userid, dateoffirstprediction, user_name, streak) VALUES ('u02', DATE '2026-01-02', 'Bob', 3)`,
+    `INSERT INTO APP_USER (app_userid, dateoffirstprediction, user_name, streak) VALUES ('u03', DATE '2026-01-03', 'Charlie', 2)`,
+    `INSERT INTO APP_USER (app_userid, dateoffirstprediction, user_name, streak) VALUES ('u04', DATE '2026-01-04', 'Diana', 4)`,
+    `INSERT INTO APP_USER (app_userid, dateoffirstprediction, user_name, streak) VALUES ('u05', DATE '2026-01-05', 'Edward', 1)`,
 
-    `INSERT INTO RACE_SESSION (season, trackname, sessiondate) VALUES (2026, 'silverstone', DATE '2026-03-01')`,
-    `INSERT INTO RACE_SESSION (season, trackname, sessiondate) VALUES (2026, 'monaco', DATE '2026-03-15')`,
+    // RACE_SESSION
+    `INSERT INTO RACE_SESSION (season, trackname, sessiondate) VALUES (2026, 'Silverstone', DATE '2026-03-01')`,
+    `INSERT INTO RACE_SESSION (season, trackname, sessiondate) VALUES (2026, 'Monaco', DATE '2026-03-15')`,
+    `INSERT INTO RACE_SESSION (season, trackname, sessiondate) VALUES (2026, 'Spa', DATE '2026-04-10')`,
+    `INSERT INTO RACE_SESSION (season, trackname, sessiondate) VALUES (2026, 'Monza', DATE '2026-05-05')`,
 
-    `INSERT INTO TEAMBYDEBUT (teamid, dateofentrytof1) VALUES ('t01', DATE '1950-05-13')`,
-    `INSERT INTO TEAMBYDEBUT (teamid, dateofentrytof1) VALUES ('t02', DATE '1960-07-01')`,
+    // TEAM
+    `INSERT INTO TEAM (points, name, teamid, nationality) VALUES (150, 'Red Racers', 't01', 'USA')`,
+    `INSERT INTO TEAM (points, name, teamid, nationality) VALUES (120, 'Blue Rockets', 't02', 'UK')`,
+    `INSERT INTO TEAM (points, name, teamid, nationality) VALUES (130, 'Green Lightning', 't03', 'GER')`,
+    `INSERT INTO TEAM (points, name, teamid, nationality) VALUES (110, 'Yellow Speed', 't04', 'FRA')`,
+    `INSERT INTO TEAM (points, name, teamid, nationality) VALUES (140, 'Black Arrows', 't05', 'ITA')`,
 
-    `INSERT INTO TEAM (points, name, teamid) VALUES (120, 'redracers', 't01')`,
-    `INSERT INTO TEAM (points, name, teamid) VALUES (95, 'speedstars', 't02')`,
+    // DRIVER
+    `INSERT INTO DRIVER (driverid, accumulatedpoints, drivernumber, firstname, lastname, nationality, teamid, dateofbirth) VALUES ('d01', 300, 33, 'Lewis', 'Hamilton', 'GBR', 't01', DATE '1985-01-07')`,
+    `INSERT INTO DRIVER (driverid, accumulatedpoints, drivernumber, firstname, lastname, nationality, teamid, dateofbirth) VALUES ('d02', 250, 44, 'Max', 'Verstappen', 'NED', 't02', DATE '1997-09-30')`,
+    `INSERT INTO DRIVER (driverid, accumulatedpoints, drivernumber, firstname, lastname, nationality, teamid, dateofbirth) VALUES ('d03', 280, 16, 'Charles', 'Leclerc', 'MON', 't03', DATE '1997-10-16')`,
+    `INSERT INTO DRIVER (driverid, accumulatedpoints, drivernumber, firstname, lastname, nationality, teamid, dateofbirth) VALUES ('d04', 200, 11, 'Sergio', 'Perez', 'MEX', 't02', DATE '1990-01-26')`,
+    `INSERT INTO DRIVER (driverid, accumulatedpoints, drivernumber, firstname, lastname, nationality, teamid, dateofbirth) VALUES ('d05', 180, 4, 'Lando', 'Norris', 'GBR', 't04', DATE '1999-11-13')`,
+    `INSERT INTO DRIVER (driverid, accumulatedpoints, drivernumber, firstname, lastname, nationality, teamid, dateofbirth) VALUES ('d06', 220, 3, 'Daniel', 'Ricciardo', 'AUS', 't04', DATE '1989-07-01')`,
+    `INSERT INTO DRIVER (driverid, accumulatedpoints, drivernumber, firstname, lastname, nationality, teamid, dateofbirth) VALUES ('d07', 240, 10, 'Pierre', 'Gasly', 'FRA', 't05', DATE '1996-02-07')`,
+    `INSERT INTO DRIVER (driverid, accumulatedpoints, drivernumber, firstname, lastname, nationality, teamid, dateofbirth) VALUES ('d08', 210, 14, 'Fernando', 'Alonso', 'ESP', 't03', DATE '1981-07-29')`,
+    `INSERT INTO DRIVER (driverid, accumulatedpoints, drivernumber, firstname, lastname, nationality, teamid, dateofbirth) VALUES ('d09', 230, 55, 'Carlos', 'Sainz', 'ESP', 't03', DATE '1994-09-01')`,
+    `INSERT INTO DRIVER (driverid, accumulatedpoints, drivernumber, firstname, lastname, nationality, teamid, dateofbirth) VALUES ('d10', 195, 6, 'Nicholas', 'Latifi', 'CAN', 't05', DATE '1995-06-29')`,
 
-    `INSERT INTO DRIVERBYDEBUT (name, dateofentrytof1) VALUES ('hamilton', DATE '2007-03-18')`,
-    `INSERT INTO DRIVERBYDEBUT (name, dateofentrytof1) VALUES ('verstappen', DATE '2015-05-03')`,
+    // SCORE
+    `INSERT INTO SCORE (ranking, acc, amount, deductions) VALUES (1, 'u01', 100, 0)`,
+    `INSERT INTO SCORE (ranking, acc, amount, deductions) VALUES (2, 'u02', 90, 5)`,
+    `INSERT INTO SCORE (ranking, acc, amount, deductions) VALUES (3, 'u03', 80, 0)`,
 
-    `INSERT INTO DRIVER (driverid, accumulatedpoints, points, name, namedebut) VALUES ('d01', 3000, 120, 'redracers', 'hamilton')`,
-    `INSERT INTO DRIVER (driverid, accumulatedpoints, points, name, namedebut) VALUES ('d02', 2500, 95, 'speedstars', 'verstappen')`,
+    // CATEGORY
+    `INSERT INTO CATEGORY (categoryid, name) VALUES ('c01', 'Race Winner')`,
+    `INSERT INTO CATEGORY (categoryid, name) VALUES ('c02', 'Pole Position')`,
+    `INSERT INTO CATEGORY (categoryid, name) VALUES ('c03', 'Fastest Lap')`,
 
-    `INSERT INTO RACE (season, trackname) VALUES (2026, 'silverstone')`,
-    `INSERT INTO RACE (season, trackname) VALUES (2026, 'monaco')`,
+    // PREDICTION
+    `INSERT INTO PREDICTION (predictionid, categoryid, prediction_value, date_filed, time_filed, season, trackname, driverid, app_userid) VALUES ('p01', 'c01', 'd01', DATE '2026-03-05', TO_TIMESTAMP('2026-03-05 12:00:00', 'yyyy-mm-dd hh24:mi:ss'), 2026, 'Silverstone', 'd01', 'u01')`,
+    `INSERT INTO PREDICTION (predictionid, categoryid, prediction_value, date_filed, time_filed, season, trackname, driverid, app_userid) VALUES ('p02', 'c02', 'd02', DATE '2026-03-06', TO_TIMESTAMP('2026-03-06 14:00:00', 'yyyy-mm-dd hh24:mi:ss'), 2026, 'Monaco', 'd02', 'u02')`,
+    `INSERT INTO PREDICTION (predictionid, categoryid, prediction_value, date_filed, time_filed, season, trackname, driverid, app_userid) VALUES ('p03', 'c03', 'd03', DATE '2026-03-07', TO_TIMESTAMP('2026-03-07 15:00:00', 'yyyy-mm-dd hh24:mi:ss'), 2026, 'Spa', 'd03', 'u03')`,
 
-    `INSERT INTO PREDICTION (predictionid, date_filed, time_filed, season, trackname, dateoffirstprediction, app_userid) VALUES ('p01', DATE '2026-03-05', TO_TIMESTAMP('2026-03-05 12:00:00', 'yyyy-mm-dd hh24:mi:ss'), 2026, 'silverstone', DATE '2023-01-01', 'u01')`,
-    `INSERT INTO PREDICTION (predictionid, date_filed, time_filed, season, trackname, dateoffirstprediction, app_userid) VALUES ('p02', DATE '2026-03-06', TO_TIMESTAMP('2026-03-06 14:00:00', 'yyyy-mm-dd hh24:mi:ss'), 2026, 'monaco', DATE '2023-01-02', 'u02')`,
+    // PREDICTIONSCORE
+    `INSERT INTO PREDICTIONSCORE (predictionid, ranking, acc) VALUES ('p01', 1, 'u01')`,
+    `INSERT INTO PREDICTIONSCORE (predictionid, ranking, acc) VALUES ('p02', 2, 'u02')`,
+    `INSERT INTO PREDICTIONSCORE (predictionid, ranking, acc) VALUES ('p03', 3, 'u03')`,
 
-    `INSERT INTO CATEGORY (id, name) VALUES ('c01', 'speed')`,
-    `INSERT INTO CATEGORY (id, name) VALUES ('c02', 'strategy')`,
+    // FRIEND
+    `INSERT INTO FRIEND (user1id, user2id) VALUES ('u01', 'u02')`,
+    `INSERT INTO FRIEND (user1id, user2id) VALUES ('u01', 'u03')`,
+    `INSERT INTO FRIEND (user1id, user2id) VALUES ('u02', 'u03')`,
 
-    `INSERT INTO PREDICTIONCATEGORY (predictionid, id) VALUES ('p01', 'c01')`,
-    `INSERT INTO PREDICTIONCATEGORY (predictionid, id) VALUES ('p02', 'c02')`,
+    // RACE
+    `INSERT INTO RACE (season, trackname) VALUES (2026, 'Silverstone')`,
+    `INSERT INTO RACE (season, trackname) VALUES (2026, 'Monaco')`,
+    `INSERT INTO RACE (season, trackname) VALUES (2026, 'Spa')`,
 
-    `INSERT INTO SCORE (ranking, acc, amount, deductions) VALUES (1, 'a', 100, 0)`,
-    `INSERT INTO SCORE (ranking, acc, amount, deductions) VALUES (2, 'b', 90, 5)`,
+    // SPRINT
+    `INSERT INTO SPRINT (season, trackname) VALUES (2026, 'Silverstone')`,
+    `INSERT INTO SPRINT (season, trackname) VALUES (2026, 'Monaco')`,
 
-    `INSERT INTO PREDICTIONSCORE (predictionid, ranking, acc) VALUES ('p01', 1, 'a')`,
-    `INSERT INTO PREDICTIONSCORE (predictionid, ranking, acc) VALUES ('p02', 2, 'b')`,
+    // QUALIFYING
+    `INSERT INTO QUALIFYING (season, trackname, qualifyingdate) VALUES (2026, 'Silverstone', 1)`,
+    `INSERT INTO QUALIFYING (season, trackname, qualifyingdate) VALUES (2026, 'Monaco', 1)`,
 
-    `INSERT INTO FRIEND (user1id, user1_date, user2id, user2_date) VALUES ('u01', DATE '2023-01-01', 'u02', DATE '2023-01-02')`,
+    // PRACTICE
+    `INSERT INTO PRACTICE (season, trackname, round) VALUES (2026, 'Silverstone', 1)`,
+    `INSERT INTO PRACTICE (season, trackname, round) VALUES (2026, 'Monaco', 1)`,
 
-    `INSERT INTO QUALIFYING (season, trackname, round) VALUES (2026, 'silverstone', 1)`,
-    `INSERT INTO QUALIFYING (season, trackname, round) VALUES (2026, 'monaco', 1)`,
+    // RESULT
+    `INSERT INTO RESULT (driveroftheday, pitstops, position, totaltime, season, trackname, driverid) VALUES ('Lewis Hamilton', 2, 1, TO_DSINTERVAL('0 01:35:20'), 2026, 'Silverstone', 'd01')`,
+    `INSERT INTO RESULT (driveroftheday, pitstops, position, totaltime, season, trackname, driverid) VALUES ('Max Verstappen', 1, 2, TO_DSINTERVAL('0 01:36:15'), 2026, 'Monaco', 'd02')`,
 
-    `INSERT INTO PRACTICE (season, trackname, round) VALUES (2026, 'silverstone', 1)`,
-    `INSERT INTO PRACTICE (season, trackname, round) VALUES (2026, 'monaco', 1)`,
+    // RACE_RESULT
+    `INSERT INTO RACE_RESULT (type, pitstops, position, totaltime, season, trackname, driverid, teamid) VALUES ('Race', 2, 1, TO_DSINTERVAL('0 01:35:20'), 2026, 'Silverstone', 'd01', 't01')`,
+    `INSERT INTO RACE_RESULT (type, pitstops, position, totaltime, season, trackname, driverid, teamid) VALUES ('Race', 1, 2, TO_DSINTERVAL('0 01:36:15'), 2026, 'Monaco', 'd02', 't02')`,
 
-    `INSERT INTO SPRINT (season, trackname) VALUES (2026, 'silverstone')`,
-    `INSERT INTO SPRINT (season, trackname) VALUES (2026, 'monaco')`,
+    // QUALI_RESULT
+    `INSERT INTO QUALI_RESULT (type, position, season, trackname, driverid, teamid, q1time, q2time, q3time) VALUES ('Quali', 1, 2026, 'Silverstone', 'd01', 't01', TO_DSINTERVAL('0 00:25:10'), TO_DSINTERVAL('0 00:24:50'), TO_DSINTERVAL('0 00:24:30'))`,
+    `INSERT INTO QUALI_RESULT (type, position, season, trackname, driverid, teamid, q1time, q2time, q3time) VALUES ('Quali', 2, 2026, 'Monaco', 'd02', 't02', TO_DSINTERVAL('0 00:25:20'), TO_DSINTERVAL('0 00:25:00'), TO_DSINTERVAL('0 00:24:40'))`,
 
-    `INSERT INTO RESULT (driveroftheday, pitstops, position, totaltime, season, trackname, driverid) VALUES ('hamilton', 2, 1, TO_DSINTERVAL('0 01:35:20'), 2026, 'silverstone', 'd01')`,
-    `INSERT INTO RESULT (driveroftheday, pitstops, position, totaltime, season, trackname, driverid) VALUES ('verstappen', 1, 2, TO_DSINTERVAL('0 01:36:15'), 2026, 'monaco', 'd02')`
+    // SPRINT_RESULT
+    `INSERT INTO SPRINT_RESULT (type, position, totaltime, season, trackname, driverid, teamid) VALUES ('Sprint', 1, TO_DSINTERVAL('0 00:35:50'), 2026, 'Silverstone', 'd01', 't01')`,
+    `INSERT INTO SPRINT_RESULT (type, position, totaltime, season, trackname, driverid, teamid) VALUES ('Sprint', 2, TO_DSINTERVAL('0 00:36:10'), 2026, 'Monaco', 'd02', 't02')`
+];
+const testsql = [
+    'SELECT position, type FROM RACE_RESULT'
 ];
 
 module.exports = {
     tableCreations,
     deleteStatements,
-    demoInsertStatements
+    demoInsertStatements,
+    testsql
 }
