@@ -172,7 +172,7 @@ async function executeSql(statement) {
             return connection.execute(statement);
         });
     } catch (err) {
-        console.error("Issue with the formatting in sql entry:" + err);
+        console.error("Issue with the formatting in sql entry:" + statement + err);
         return null;
     }
 }
