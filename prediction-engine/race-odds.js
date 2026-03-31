@@ -8,33 +8,31 @@ const POSITION_WEIGHT = 1000
 // finishes_to_consider details how many of the most recent overall and track specific finishes to consider when calculating
 // position_weight details how much to multiply position values in the final equation
 async function calculateRaceOdd(Driver_id, track_name) {
-    const accumulatedPoints = await appService.executeSql(`SELECT ACCUMULATED_POINTS FROM DRIVER WHERE DRIVER_ID=${Driver_id}`);
+    let sql = `SELECT ACCUMULATEDPOINTS FROM DRIVER WHERE DRIVERID=${Driver_id}`
+    const accumulatedPoints = await appService.executeSql(sql);
 
-    const sqlGetRecentFinishes = `SELECT POSITION 
-                                  FROM RESULT r NATURAL JOIN RACE_SESSION s
-                                  WHERE r.DRIVERID=${Driver_id}
-                                  ORDER BY s.SESSIONDATE DESC
-                                  FETCH FIRST ${TOP_FINISHES_TO_CONSIDER} ROWS ONLY`
-    const recentFinishes = await appService.executeSql(sqlGetRecentFinishes);
+    sql = `SELECT SUM(POSITION) AS TOTAL_TRACK_POSITION
+           FROM DRIVER NATURAL JOIN RACE_RESULT r
+           WHERE DRIVERID=${Driver_id} AND r.TRACKNAME=${track_name}
+           ORDER BY r.SESSIONDATE DESC
+           FETCH FIRST ${MAX_RACES_TO_CONSIDER} ROWS ONLY`
+    const recentFinishesOnTrack = await appService.executeSql(sql)
 
-    const sqlRecentFinishesOnTrack = `SELECT POSITION
-                                      FROM RESULT r NATURAL JOIN RACE_SESSION s
-                                      WHERE r.DRIVERID=${Driver_id} AND TRACKNAME=${track_name}
-                                      ORDER BY s.SESSIONDATE DESC
-                                      FETCH FIRST ${TOP_FINISHES_TO_CONSIDER} ROWS ONLY`
-    const recentFinishesOnTrack = await appService.executeSql(sqlRecentFinishesOnTrack);
+    sql = `SELECT SUM(POSITION) AS TOTAL_POSITION 
+           FROM DRIVER NATURAL JOIN RACE_RESULT r
+           WHERE DRIVERID=${Driver_id}
+           ORDER BY r.SESSIONDATE DESC
+           FETCH FIRST ${MAX_RACES_TO_CONSIDER} ROWS ONLY`
+    const recentFinishes = await appService.executeSql(sql)
 
-    // we want 1st place positions to be valued more, so we'll take the recipricol of each position 
-    const pointsTotal = accumulatedPoints.reduce((acc, x) => {
-        return acc + x.ACCUMULATED_POINTS
-    }, 0)
-    const recentFinishesTotal = recentFinishes.reduce((acc, x) => {
-        return acc + transformPosition(x.POSITION)
-    }, 0)
-    const recentFinishesOnTrackTotal = recentFinishesOnTrack.reduce((acc, x) => {
-        return acc + transformPosition(x.POSITION)
-    }, 0)
-    return pointsTotal + recentFinishesOnTrackTotal + recentFinishesTotal   
+    if (recentFinishesOnTrack.rows.length === 0 || recentFinishes.rows.length === 0) {
+        return 0;
+    }
+    
+    // larger position scores mean a driver did worse, so we'll fix this by taking the recipricol and multiplying by a constant
+    return transformPosition(accumulatedPoints.rows[0].ACCUMULATEDPOINTS)
+           + transformPosition(recentFinishesOnTrack.rows[0].TOTAL_TRACK_POSITION)
+           + transformPosition(ecentFinishes.rows[0].TOTAL_POSITION)
 }
 
 function transformPosition(value) {
@@ -55,13 +53,13 @@ async function calculateDriverOddsForRace(track_name, season) {
 }
 
 // generate odds to for each team to win the most points in a given race ----------------------------------------------------------------
+// this one is a simple calculation, just looking at the total points for every team
 
 async function getTeamsForSeason(season) {
-    const sql = `SELECT d.NAME, d.POINTS
-                 FROM TAKEPART t NATURAL JOIN DRIVER d NATURAL JOIN RACE_SESSION s
-                 WHERE s.SEASON=${season}
-                 ORDER BY d.POINTS DESC`
-    // NOTE: we don't need to worry about grouping by name, since each team should only appear once after filtering for season
+    const sql = `SELECT t.NAME AS NAME, t.POINTS AS POINTS
+                 FROM TAKEPART NATURAL JOIN DRIVER d NATURAL JOIN TEAM t
+                 WHERE SEASON=${season}
+                 GROUP BY t.NAME, t.POINTS`
     const dataResult = await appService.executeSql(sql)
     return dataResult.rows
 }
@@ -119,16 +117,31 @@ const BASE_BET_VALUE = 1.5;
 
 // Gets the average total circuit time for a specific season and track
 async function getAverageCircuitTime(season, trackName) {
+    // we cannot output a pure DAY TO SECOND interval, becuase node.js cannot handle it
+    // we will avg over the interval as seconds, and then convert back to DAY TO SECOND, then convert back to hour:minute:second
+    // I think average over an interval is illegal, or I just wasted my time
     const sql = `
-        SELECT AVG(TOTALTIME) AS avg_total_time
-        FROM RESULTS r 
-        NATURAL JOIN RACE_SESSION s
-        WHERE s.SEASON=${season} AND s.TRACKNAME='${trackName}'
-        ORDER BY s.SEASON DESC
-        FETCH FIRST ${MAX_RACES_TO_CONSIDER} ROWS ONLY
-    `;
+       SELECT
+            FLOOR(EXTRACT(DAY FROM avg_time)*24 + EXTRACT(HOUR FROM avg_time)) AS AVG_HOURS,
+            EXTRACT(MINUTE FROM avg_time) AS AVG_MINUTES,
+            EXTRACT(SECOND FROM avg_time) AS AVG_SECONDS
+       FROM (
+            SELECT
+                NUMTODSINTERVAL(
+                AVG(
+                    EXTRACT(DAY FROM TOTALTIME)*86400 +
+                    EXTRACT(HOUR FROM TOTALTIME)*3600 +
+                    EXTRACT(MINUTE FROM TOTALTIME)*60 +
+                    EXTRACT(SECOND FROM TOTALTIME)
+                ),
+                'SECOND'
+            ) AS avg_time
+            FROM RACE_RESULTS NATURAL JOIN RACE_SESSION
+            WHERE SEASON = ${season} AND TRACKNAME = ${trackName}
+      )
+)`;
     const result = await appService.executeSql(sql);
-    return result.rows[0]['AVG_TOTAL_TIME'];
+    return result.rows[0]
 }
 
 /**
@@ -136,29 +149,35 @@ async function getAverageCircuitTime(season, trackName) {
  */
 async function getLowestCircuitTime(season, trackName) {
     const sql = `
-        SELECT MIN(TOTALTIME) AS min_total_time
-        FROM RESULTS r 
-        NATURAL JOIN RACE_SESSION s
-        WHERE s.SEASON=${season} AND s.TRACKNAME='${trackName}'
-        ORDER BY s.SEASON DESC
-        FETCH FIRST ${MAX_RACES_TO_CONSIDER} ROWS ONLY
+        SELECT
+            FLOOR(EXTRACT(DAY FROM MIN_TIME)*24 + EXTRACT(HOUR FROM avg_time)) AS MIN_HOURS,
+            EXTRACT(MINUTE FROM MIN_TIME) AS AVG_MINUTES,
+            EXTRACT(SECOND FROM MIN_TIME) AS AVG_SECONDS
+        FROM (
+            SELECT MIN(TOTALTIME) AS MIN_TIME
+            FROM RACE_RESULTS NATURAL JOIN RACE_SESSION
+            WHERE SEASON = ${season} AND TRACKNAME = ${trackName}
+        )
     `;
     const result = await appService.executeSql(sql);
-    return result.rows[0]['MIN_TOTAL_TIME'];
+    return result.rows[0]
 }
 
 // Gets the maximum total circuit time for a specific season and track
 async function getHighestCircuitTime(season, trackName) {
     const sql = `
-        SELECT MAX(TOTALTIME) AS max_total_time
-        FROM RESULTS r 
-        NATURAL JOIN RACE_SESSION s
-        WHERE s.SEASON=${season} AND s.TRACKNAME='${trackName}'
-        ORDER BY s.SEASON DESC
-        FETCH FIRST ${MAX_RACES_TO_CONSIDER} ROWS ONLY
+        SELECT
+            FLOOR(EXTRACT(DAY FROM MAX_TIME)*24 + EXTRACT(HOUR FROM avg_time)) AS MAX_HOURS,
+            EXTRACT(MINUTE FROM MAX_TIME) AS AVG_MINUTES,
+            EXTRACT(SECOND FROM MAX_TIME) AS AVG_SECONDS
+        FROM (
+            SELECT MAX(TOTALTIME) AS MAX_TIME
+            FROM RACE_RESULTS NATURAL JOIN RACE_SESSION
+            WHERE SEASON = ${season} AND TRACKNAME = ${trackName}
+        )
     `;
     const result = await appService.executeSql(sql);
-    return result.rows[0]['MAX_TOTAL_TIME'];
+    return result.rows[0]
 }
 
 /**
@@ -172,15 +191,21 @@ async function generateCircuitTimeOdds(extremityRatio, season, trackName) {
 
     return {
         fastestCircuit: {
-            value: fastestCircuitTime,
+            hours: fastestCircuitTime.MAX_HOURS,
+            minutes: fastestCircuitTime.MAX_MINUTES,
+            seconds: fastestCircuitTime.MAX_SECONDS,
             over: BASE_BET_VALUE * extremityRatio,
         },
         slowestCircuit: {
-            value: slowestCircuitTime,
+            hours: slowestCircuitTime.MIN_HOURS,
+            minutes: slowestCircuitTime.MIN_MINUTES,
+            seconds: slowestCircuitTime.MIN_SECONDS,
             under: BASE_BET_VALUE * extremityRatio,
         },
         avgCircuit: {
-            value: avgCircuitTime,
+            hours: avgCircuitTime.AVG_HOURS,
+            minutes: avgCircuitTime.AVG_MINUTES,
+            seconds: avgCircuitTime.AVG_SECONDS,
             over: BASE_BET_VALUE,
             under: BASE_BET_VALUE,
         }
@@ -190,12 +215,12 @@ async function generateCircuitTimeOdds(extremityRatio, season, trackName) {
 // generate odds for whether a player will finish off of the podium ----------------------------------------------------------------
 
 async function getPodiumDrivers(season) {
-    const sql = `SELECT d.name, COUNT(*) AS podiums
-                 FROM RESULT r NATURAL JOIN DRIVER d NATURAL JOIN RACE_SESSION s
-                 WHERE r.position <= 3 AND s.season=${season}
-                 GROUP BY d.name
+    const sql = `SELECT FIRSTNAME || ' ' || LASTNAME AS FULLNAME, COUNT(*) AS PODIUMS
+                 FROM RESULT NATURAL JOIN DRIVER
+                 WHERE SEASON=${season} AND POSITION <= 3
+                 GROUP BY DRIVERID
                  HAVING COUNT(*) >= 5
-                 ORDER BY podiums DESC`
+                 ORDER BY PODIUMS DESC`
     const frequentPodiums = await appService.executeSql(sql);
     return frequentPodiums.rows;
 }
@@ -206,7 +231,7 @@ async function getOddsForPodiums(season) {
     const podiumData = await getPodiumDrivers(season);
     for (driver of podiumData) {
         returnData.push({
-            name: DRIVER.NAME,
+            name: DRIVER.FULLNAME,
             careerPodiumFinishes: driver.PODIUMS,
             odds: driver.PODIUMS // potentially unbalanced but what the heck
         })
