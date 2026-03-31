@@ -1,6 +1,4 @@
 const appService = require('../appService');
-const master = require('./odds-calculator')
-
 
 // generate odds for whether or not a specific driver will win the race -------------------------------------------------------------
 
@@ -13,17 +11,17 @@ async function calculateRaceOdd(Driver_id, track_name) {
     const accumulatedPoints = await appService.executeSql(`SELECT ACCUMULATED_POINTS FROM DRIVER WHERE DRIVER_ID=${Driver_id}`);
 
     const sqlGetRecentFinishes = `SELECT POSITION 
-                                  FROM RESULTS r NATURAL JOIN RACE_SESSION s
-                                  WHERE r.DRIVER_ID=${Driver_id}
+                                  FROM RESULT r NATURAL JOIN RACE_SESSION s
+                                  WHERE r.DRIVERID=${Driver_id}
                                   ORDER BY s.SESSIONDATE DESC
-                                  LIMIT ${TOP_FINISHES_TO_CONSIDER}`
+                                  FETCH FIRST ${TOP_FINISHES_TO_CONSIDER} ROWS ONLY`
     const recentFinishes = await appService.executeSql(sqlGetRecentFinishes);
 
     const sqlRecentFinishesOnTrack = `SELECT POSITION
-                                      FROM RESULTS r NATURAL JOIN RACE_SESSION s
-                                      WHERE r.DRIVER_ID=${Driver_id} AND s.TRACKNAME=${track_name}
+                                      FROM RESULT r NATURAL JOIN RACE_SESSION s
+                                      WHERE r.DRIVERID=${Driver_id} AND TRACKNAME=${track_name}
                                       ORDER BY s.SESSIONDATE DESC
-                                      LIMIT ${TOP_FINISHES_TO_CONSIDER}`
+                                      FETCH FIRST ${TOP_FINISHES_TO_CONSIDER} ROWS ONLY`
     const recentFinishesOnTrack = await appService.executeSql(sqlRecentFinishesOnTrack);
 
     // we want 1st place positions to be valued more, so we'll take the recipricol of each position 
@@ -45,15 +43,15 @@ function transformPosition(value) {
 
 async function calculateDriverOddsForRace(track_name, season) {
     const oddsData = []
-    const sqlActiveDrivers = `SELECT DRIVER_ID
-                              FROM RESULTS r NATURAL JOIN RACE_SESSION s
+    const sqlActiveDrivers = `SELECT DRIVERID
+                              FROM RESULT r NATURAL JOIN RACE_SESSION s
                               WHERE SEASON=${season} AND TRACKNAME=${track_name}`
     const activeDrivers = await appService.executeSql(sqlActiveDrivers);
     for (const driver_info of activeDrivers.rows) {
         const odds = await calculateRaceOdd(driver_info.DRIVER_ID, track_name);
         oddsData.push({id: driver_info.DRIVER_ID, odd: odds})
     }
-    return master.formatOdds(oddsData)
+    return formatOdds(oddsData)
 }
 
 // generate odds to for each team to win the most points in a given race ----------------------------------------------------------------
@@ -88,6 +86,28 @@ function calculatePointsForAllTeams(data) {
     return data.reduce((acc, value) => {
         return acc  + value.POINTS
     })
+}
+
+// mentally prepare yourself before reading how I'm calculating odds
+function formatOdds(data) {
+    // the input is a list of numbers, that don't represent odds at all (they just rank who our model thinks will do well)
+    // our odds format will be a number that represents your return for 1 point bet. (about to say dollar there...)
+    // approach:
+    // find the highest value (highest chance of winning) and set it's odds to 1.1
+    // for each value after the highest value, find the multiplication factor and multiply this with the 1.1
+
+    const sortedData = data.sort((a, b) => {
+        return b.odd - a.odd;
+    })
+
+    const baseFactor = sortedData[0].odd
+
+    sortedData.forEach((value) => {
+        const factor = baseFactor / value.odd;
+        value.odd = factor * 1.1
+    })
+
+    return sortedData
 }
 
 // generate odds for a driver to beat specific race time milestones ------------------------------------------------------------

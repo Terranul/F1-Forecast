@@ -27,7 +27,7 @@ router.post("/initiate-demotable", async (req, res) => {
     if (true) {
         await appService.insertDemoData()
         // now test the db by inserting data after the fact 
-        await appService.insertToTable("CATEGORY", {id: "c03", name: "testing"});
+        await appService.insertToTable("CATEGORY", {CATEGORYID: "c03", name: "testing"});
         const result = await appService.executeSql("SELECT * FROM SPRINT")
         console.log(result)
         res.json({ success: true });
