@@ -8,7 +8,7 @@ const tableCreations = [
     dateoffirstprediction DATE,
     user_name VARCHAR2(50),
     streak INTEGER,
-    CONSTRAINT APP_USER_PK PRIMARY KEY (app_userid, dateoffirstprediction)
+    CONSTRAINT APP_USER_PK PRIMARY KEY (app_userid)
 )`,
 
     `CREATE TABLE RACE_SESSION (
@@ -26,16 +26,14 @@ const tableCreations = [
     CONSTRAINT TEAM_PK PRIMARY KEY (teamid)
 )`,
 
-
-
     `CREATE TABLE DRIVER (
-    driverid VARCHAR2(10),
+    driverid VARCHAR2(5),
     accumulatedpoints INTEGER,
     drivernumber INTEGER,
     firstname VARCHAR2(25),
     lastname VARCHAR2(25),
     nationality VARCHAR2(25),
-    teamid VARCHAR2(10),
+    teamid VARCHAR2(25),
     dateofbirth DATE,
     CONSTRAINT DRIVER_PK PRIMARY KEY (driverid),
     CONSTRAINT DRIVER_FK_TEAM FOREIGN KEY (teamid) REFERENCES TEAM(teamid) ON DELETE CASCADE
@@ -64,40 +62,26 @@ const tableCreations = [
     season NUMBER NOT NULL,
     trackname VARCHAR2(50) NOT NULL,
     driverid VARCHAR2(5) NOT NULL,
-    CONSTRAINT RESULT_PK PRIMARY KEY (position, season, trackname),
-    CONSTRAINT RESULT_FK_RACE_SESSION FOREIGN KEY (season, trackname) REFERENCES RACE_SESSION(season, trackname) ON DELETE CASCADE,
-    CONSTRAINT RESULT_FK_DRIVER FOREIGN KEY (driverid) REFERENCES DRIVER(driverid) ON DELETE CASCADE
+    CONSTRAINT RESULT_PK_BASE PRIMARY KEY (position, season, trackname),
+    CONSTRAINT RESULT_FK_RACE_SESSION_BASE FOREIGN KEY (season, trackname) REFERENCES RACE_SESSION(season, trackname) ON DELETE CASCADE,
+    CONSTRAINT RESULT_FK_DRIVER_BASE FOREIGN KEY (driverid) REFERENCES DRIVER(driverid) ON DELETE CASCADE
 )`,
 
     `CREATE TABLE PREDICTION (
     predictionid VARCHAR2(5),
     categoryid VARCHAR2(5),
     prediction_value VARCHAR2(10),
-    prediction_target VARCHAR2(10),
     date_filed DATE NOT NULL,
     time_filed TIMESTAMP(6) NOT NULL,
     season NUMBER NOT NULL,
     trackname VARCHAR2(50) NOT NULL,
     driverid VARCHAR2(5),
-    dateoffirstprediction DATE NOT NULL,
     app_userid VARCHAR2(25),
     CONSTRAINT PREDICTION_PK PRIMARY KEY (predictionid),
     CONSTRAINT PREDICTION_FK_CATE FOREIGN KEY (categoryid) REFERENCES CATEGORY(categoryid) ON DELETE CASCADE,
     CONSTRAINT PREDICTION_FK_DRVR FOREIGN KEY (driverid) REFERENCES DRIVER(driverid) ON DELETE CASCADE,
-    CONSTRAINT PREDICTION_FK_USER FOREIGN KEY (app_userid, dateoffirstprediction) REFERENCES APP_USER(app_userid, dateoffirstprediction) ON DELETE CASCADE
-)`,
-
-    `CREATE TABLE CATEGORY (
-    id VARCHAR2(5),
-    name VARCHAR2(50),
-    CONSTRAINT CATEGORY_PK PRIMARY KEY (id)
-)`,
-
-    `CREATE TABLE PREDICTIONCATEGORY (
-    predictionid VARCHAR2(5),
-    id VARCHAR2(5),
-    CONSTRAINT PREDICTIONCATEGORY_PK PRIMARY KEY (predictionid, id),
-    CONSTRAINT PREDICTIONCATEGORY_FK FOREIGN KEY (predictionid) REFERENCES PREDICTION(predictionid) ON DELETE CASCADE
+    CONSTRAINT PREDICTION_FK_SESS FOREIGN KEY (season, trackname) REFERENCES RACE_SESSION(season, trackname) ON DELETE CASCADE,
+    CONSTRAINT PREDICTION_FK_USER FOREIGN KEY (app_userid) REFERENCES APP_USER(app_userid) ON DELETE CASCADE
 )`,
 
     `CREATE TABLE PREDICTIONSCORE (
@@ -111,11 +95,10 @@ const tableCreations = [
 
     `CREATE TABLE FRIEND (
     user1id VARCHAR2(25),
-    user1_date DATE,
     user2id VARCHAR2(25),
-    user2_date DATE,
-    CONSTRAINT FRIEND_FK_USER1 FOREIGN KEY (user1id, user1_date) REFERENCES APP_USER(app_userid, dateoffirstprediction) ON DELETE CASCADE,
-    CONSTRAINT FRIEND_FK_USER2 FOREIGN KEY (user2id, user2_date) REFERENCES APP_USER(app_userid, dateoffirstprediction) ON DELETE CASCADE
+    CONSTRAINT FRIEND_FK_USER1 FOREIGN KEY (user1id) REFERENCES APP_USER(app_userid) ON DELETE CASCADE,
+    CONSTRAINT FRIEND_FK_USER2 FOREIGN KEY (user2id) REFERENCES APP_USER(app_userid) ON DELETE CASCADE,
+    CONSTRAINT FRIEND_PK PRIMARY KEY (user1id, user2id)
 )`,
 
     `CREATE TABLE RACE (
@@ -135,7 +118,7 @@ const tableCreations = [
     `CREATE TABLE QUALIFYING (
     season NUMBER,
     trackname VARCHAR2(50),
-    qualyfyingdate NUMBER,
+    qualifyingdate NUMBER,
     CONSTRAINT QUALIFYING_PK PRIMARY KEY (season, trackname),
     CONSTRAINT QUALIFYING_FK_RACE_SESSION FOREIGN KEY (season, trackname) REFERENCES RACE_SESSION(season, trackname) ON DELETE CASCADE
 )`,
@@ -150,7 +133,6 @@ const tableCreations = [
 
     `CREATE TABLE RACE_RESULT (
     type VARCHAR2(10), 
-    CONSTRAINT TYPE_CONSTRAINT CHECK (type IN ('QUALIFYING', 'RACE', 'SPRINT', 'PRACTICE')),
     pitstops INTEGER,
     position INTEGER,
     totaltime INTERVAL DAY TO SECOND,
@@ -166,7 +148,6 @@ const tableCreations = [
 
 `CREATE TABLE QUALI_RESULT (
     type VARCHAR2(10), 
-    CONSTRAINT QUALI_TYPE_CONSTRAINT CHECK (type IN ('QUALIFYING', 'RACE', 'SPRINT', 'PRACTICE')),
     position INTEGER,
     season NUMBER NOT NULL,
     trackname VARCHAR2(50) NOT NULL,
@@ -182,9 +163,8 @@ const tableCreations = [
 )`,
      
 
-`CREATE TABLE SPRINTRESULT (
+`CREATE TABLE SPRINT_RESULT (
     type VARCHAR2(10), 
-    CONSTRAINT SPRINTRES_TYPE_CONSTRAINT CHECK (type IN ('QUALIFYING', 'RACE', 'SPRINT', 'PRACTICE')),
     position INTEGER,
     totaltime INTERVAL DAY TO SECOND,
     season NUMBER NOT NULL,
@@ -203,7 +183,6 @@ const tableCreations = [
 // this means we will be left with tables that are no longer connected by any foreign keys, but it's all good becuase we're deleting them too.
 const deleteStatements = [
     `DROP TABLE PREDICTIONSCORE CASCADE CONSTRAINTS`,
-    `DROP TABLE PREDICTIONCATEGORY CASCADE CONSTRAINTS`,
     `DROP TABLE FRIEND CASCADE CONSTRAINTS`,
     `DROP TABLE PREDICTION CASCADE CONSTRAINTS`,
     `DROP TABLE RESULT CASCADE CONSTRAINTS`,
@@ -212,10 +191,7 @@ const deleteStatements = [
     `DROP TABLE PRACTICE CASCADE CONSTRAINTS`,
     `DROP TABLE RACE CASCADE CONSTRAINTS`,
     `DROP TABLE DRIVER CASCADE CONSTRAINTS`,
-    `DROP TABLE DRIVERBYDEBUT CASCADE CONSTRAINTS`,
-    `DROP TABLE TEAMREF CASCADE CONSTRAINTS`,
     `DROP TABLE TEAM CASCADE CONSTRAINTS`,
-    `DROP TABLE TEAMBYDEBUT CASCADE CONSTRAINTS`,
     `DROP TABLE SCORE CASCADE CONSTRAINTS`,
     `DROP TABLE RACE_SESSION CASCADE CONSTRAINTS`,
     `DROP TABLE CATEGORY CASCADE CONSTRAINTS`,
@@ -276,6 +252,10 @@ const demoInsertStatements = [
 
     `INSERT INTO RESULT (driveroftheday, pitstops, position, totaltime, season, trackname, driverid) VALUES ('hamilton', 2, 1, TO_DSINTERVAL('0 01:35:20'), 2026, 'silverstone', 'd01')`,
     `INSERT INTO RESULT (driveroftheday, pitstops, position, totaltime, season, trackname, driverid) VALUES ('verstappen', 1, 2, TO_DSINTERVAL('0 01:36:15'), 2026, 'monaco', 'd02')`
+];
+
+const testsql = [
+    'SELECT position, type FROM RACE_RESULT'
 ];
 
 module.exports = {

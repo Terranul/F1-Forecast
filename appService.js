@@ -194,5 +194,6 @@ module.exports = {
     initiateDemotable, 
     insertDemoData,
     insertToTable,
-    executeSql
+    executeSql,
+    testSqlStatements
 };
