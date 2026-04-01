@@ -27,7 +27,7 @@ const tableCreations = [
 )`,
 
     `CREATE TABLE DRIVER (
-    driverid VARCHAR2(5),
+    driverid VARCHAR2(25),
     accumulatedpoints INTEGER,
     drivernumber INTEGER,
     firstname VARCHAR2(25),
@@ -61,7 +61,7 @@ const tableCreations = [
     totaltime INTERVAL DAY TO SECOND,
     season NUMBER NOT NULL,
     trackname VARCHAR2(50) NOT NULL,
-    driverid VARCHAR2(5) NOT NULL,
+    driverid VARCHAR2(25) NOT NULL,
     CONSTRAINT RESULT_PK_BASE PRIMARY KEY (position, season, trackname),
     CONSTRAINT RESULT_FK_RACE_SESSION_BASE FOREIGN KEY (season, trackname) REFERENCES RACE_SESSION(season, trackname) ON DELETE CASCADE,
     CONSTRAINT RESULT_FK_DRIVER_BASE FOREIGN KEY (driverid) REFERENCES DRIVER(driverid) ON DELETE CASCADE
@@ -70,11 +70,11 @@ const tableCreations = [
 `CREATE TABLE TAKEPART (
     season NUMBER,
     trackname VARCHAR2(50),
-    driverid VARCHAR2(5)
+    driverid VARCHAR2(25)
     CONSTRAINT TAKEPART_PK PRIMARY KEY (season, trackname, driverid),
     CONSTRAINT TAKEPART_FK_RACE_SESSION FOREIGN KEY (season, trackname) REFERENCES RACE_SESSION(season, trackname) ON DELETE CASCADE,
     CONSTRAINT TAKEPART_FK_DRIVER FOREIGN KEY (driverid) REFERENCES DRIVER(driverid) ON DELETE CASCADE
-)`
+)`,
 
     `CREATE TABLE PREDICTION (
     predictionid VARCHAR2(5),
@@ -84,7 +84,7 @@ const tableCreations = [
     time_filed TIMESTAMP(6) NOT NULL,
     season NUMBER NOT NULL,
     trackname VARCHAR2(50) NOT NULL,
-    driverid VARCHAR2(5),
+    driverid VARCHAR2(25),
     app_userid VARCHAR2(25),
     CONSTRAINT PREDICTION_PK PRIMARY KEY (predictionid),
     CONSTRAINT PREDICTION_FK_CATE FOREIGN KEY (categoryid) REFERENCES CATEGORY(categoryid) ON DELETE CASCADE,
@@ -136,7 +136,7 @@ const tableCreations = [
     season NUMBER,
     trackname VARCHAR2(50),
     round NUMBER,
-    CONSTRAINT PRACTICE_PK PRIMARY KEY (season, trackname),
+    CONSTRAINT PRACTICE_PK PRIMARY KEY (season, trackname, round),
     CONSTRAINT PRACTICE_FK_RACE_SESSION FOREIGN KEY (season, trackname) REFERENCES RACE_SESSION(season, trackname) ON DELETE CASCADE
 )`,
 
@@ -147,7 +147,7 @@ const tableCreations = [
     totaltime INTERVAL DAY TO SECOND,
     season NUMBER NOT NULL,
     trackname VARCHAR2(50) NOT NULL,
-    driverid VARCHAR2(10) NOT NULL,
+    driverid VARCHAR2(25) NOT NULL,
     teamid VARCHAR2(25)  NOT NULL,
     CONSTRAINT RESULT_PK PRIMARY KEY (position, season, trackname, type),
     CONSTRAINT RESULT_FK_RACE_SESSION FOREIGN KEY (season, trackname) REFERENCES RACE_SESSION(season, trackname) ON DELETE CASCADE,
@@ -160,7 +160,7 @@ const tableCreations = [
     position INTEGER,
     season NUMBER NOT NULL,
     trackname VARCHAR2(50) NOT NULL,
-    driverid VARCHAR2(10) NOT NULL,
+    driverid VARCHAR2(25) NOT NULL,
     teamid VARCHAR2(25) NOT NULL,
     q1time INTERVAL DAY TO SECOND,
     q2time INTERVAL DAY TO SECOND,
@@ -178,7 +178,7 @@ const tableCreations = [
     totaltime INTERVAL DAY TO SECOND,
     season NUMBER NOT NULL,
     trackname VARCHAR2(50) NOT NULL,
-    driverid VARCHAR2(10) NOT NULL,
+    driverid VARCHAR2(25) NOT NULL,
     teamid VARCHAR2(25) NOT NULL,
     CONSTRAINT SPRINTRES_PK PRIMARY KEY (position, season, trackname, type),
     CONSTRAINT SPRINTRES_FK_RACE_SESSION FOREIGN KEY (season, trackname) REFERENCES RACE_SESSION(season, trackname) ON DELETE CASCADE,
