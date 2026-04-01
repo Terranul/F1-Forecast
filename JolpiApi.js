@@ -244,7 +244,7 @@ async function loadPractice(season) {
   in jolpi at all – we store null for those and you can fill them later.
 */
 async function loadRaceResults(season) {
-    const raceResJson = await get(`${BASE_URL}/${season}/results.json?limit=100`);
+    const raceResJson = await get(`${BASE_URL}/${season}/results.json`);
     const races = raceResJson.MRData.RaceTable.Races ?? [];
 
     let count = 0;
@@ -264,7 +264,7 @@ for (let i = 0; i < races.length; i++) {
             const driverId = result.Driver.driverId;
 
             await appService.insertToTable('RACE_RESULT', {
-                driveroftheday: null,      // not in API
+                type: "RACE",    // not in API
                 pitstops: pitstops[driverId],     
                 position: parseInt(result.position, 10),
                 totaltime: totaltime,
@@ -379,7 +379,7 @@ async function loadQualyfyingResults(season) {
     }
 
     async function getPitstops(season, round) {
-        const res = await get(`${BASE_URL}/${season}/${round}/pitstops,json?limit=100`);
+        const res = await get(`${BASE_URL}/${season}/${round}/pitstops.json?limit=100`);
         const races = res.MRData.RaceTable.Races ?? [];
 
         const pitStops = races.flatMap(race => race.PitStops ?? []);
@@ -403,11 +403,11 @@ async function loadQualyfyingResults(season) {
        await loadTeams(season);                         // TEAMBYDEBUT + TEAM
        await loadDrivers(season);                       // DRIVERBYDEBUT + DRIVER
         await loadRaces(season, races);                  // RACE
-       // await loadSprints(season);                       // SPRINT
-       // await loadQualifying(season);                    // QUALIFYING
+        await loadSprints(season);                       // SPRINT
+        await loadQualifying(season);                    // QUALIFYING
         await loadPractice(season);                      // PRACTICE
-        await loadRaceResults(season);                       // RACERESULT
-        await loadQualyfyingResults(season);                    // QUALIRESULT
+       await loadRaceResults(season);                       // RACERESULT
+       await loadQualyfyingResults(season);                    // QUALIRESULT
         await loadSprintResults(season);                       // SPRRESULT
 
         console.log(`\n=== Done loading season ${season} ===\n`);
