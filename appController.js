@@ -1,6 +1,11 @@
 const express = require('express');
 const appService = require('./appService');
 const f1apiService = require('./JolpiApi');
+const oddsController = require('./controllers/oddsController');
+const predictionController = require('./controllers/predictionController');
+const userController = require('./controllers/userController');
+const sessionController = require('./controllers/sessionController');
+const validationController = require('./controllers/validationController');
 
 const router = express.Router();
 
@@ -32,6 +37,7 @@ router.post("/initiate-demotable", async (req, res) => {
         await appService.testSqlStatements()
         await f1apiService.loadAllData(2026);
         await appService.insertToTable("CATEGORY", {id: "c03", name: "testing"});
+        await appService.executeSql(`INSERT INTO TEAM (points, name, teamid, nationality) VALUES (150, 'Red Racers', 't01', 'USA')`)
         const result = await appService.executeSql("SELECT * FROM SPRINT")
         console.log(result)
         res.json({ success: true });
@@ -74,6 +80,18 @@ router.get('/count-demotable', async (req, res) => {
         });
     }
 });
+
+// new endpoints below
+
+router.get('/users', userController.getUsers)
+router.get('/users/:user', userController.getUser)
+router.put('/users/:user', userController.putUser)
+router.get('/users/:user/friends', userController.getUserFriends)
+router.put('/users/user/friends/:friend', userController.putFriend)
+
+router.get('/users/:user/predictions', predictionController.getPredictions)
+router.put('/users/:user/predictions/:prediction', predictionController.putPrediction)
+router.get('/users/:user/predictions/:prediction/validate')
 
 
 module.exports = router;

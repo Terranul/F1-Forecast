@@ -178,6 +178,16 @@ async function executeSql(statement) {
     }
 }
 
+async function executeSqlBinding(statement, bindings) {
+    try {
+        return await withOracleDB(async (connection) => {
+            connection.execute(statement, bindings, { autoCommit: true })
+    })
+    } catch(err) {
+        console.log("Issue with executing sql binding");
+    }
+}
+
 async function testSqlStatements() {
     console.log("beginning testing sql statements \n")
     await withOracleDB(async (connection) => {
@@ -195,5 +205,6 @@ module.exports = {
     insertDemoData,
     insertToTable,
     executeSql,
-    testSqlStatements
+    testSqlStatements,
+    executeSqlBinding
 };

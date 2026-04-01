@@ -216,9 +216,9 @@ async function generateCircuitTimeOdds(extremityRatio, season, trackName) {
 
 async function getPodiumDrivers(season) {
     const sql = `SELECT FIRSTNAME || ' ' || LASTNAME AS FULLNAME, COUNT(*) AS PODIUMS
-                 FROM RESULT NATURAL JOIN DRIVER
+                 FROM RACE_RESULT NATURAL JOIN DRIVER
                  WHERE SEASON=${season} AND POSITION <= 3
-                 GROUP BY DRIVERID
+                 GROUP BY DRIVERID, FIRSTNAME, LASTNAME
                  HAVING COUNT(*) >= 5
                  ORDER BY PODIUMS DESC`
     const frequentPodiums = await appService.executeSql(sql);

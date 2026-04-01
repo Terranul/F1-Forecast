@@ -8,6 +8,9 @@ const tableCreations = [
     dateoffirstprediction DATE,
     user_name VARCHAR2(50),
     streak INTEGER,
+    password NUMBER,
+    acc VARCHAR2(50)
+    CONSTRAINT APP_USER_FK FOREIGN KEY (acc) REFERENCES SCORE(acc)
     CONSTRAINT APP_USER_PK PRIMARY KEY (app_userid)
 )`,
 
@@ -74,12 +77,13 @@ const tableCreations = [
     CONSTRAINT TAKEPART_PK PRIMARY KEY (season, trackname, driverid),
     CONSTRAINT TAKEPART_FK_RACE_SESSION FOREIGN KEY (season, trackname) REFERENCES RACE_SESSION(season, trackname) ON DELETE CASCADE,
     CONSTRAINT TAKEPART_FK_DRIVER FOREIGN KEY (driverid) REFERENCES DRIVER(driverid) ON DELETE CASCADE
-)`
+)`,
 
     `CREATE TABLE PREDICTION (
     predictionid VARCHAR2(5),
     categoryid VARCHAR2(5),
     prediction_value VARCHAR2(10),
+    odds_value NUMBER,
     date_filed DATE NOT NULL,
     time_filed TIMESTAMP(6) NOT NULL,
     season NUMBER NOT NULL,
@@ -304,7 +308,8 @@ const demoInsertStatements = [
     `INSERT INTO SPRINT_RESULT (type, position, totaltime, season, trackname, driverid, teamid) VALUES ('Sprint', 2, TO_DSINTERVAL('0 00:36:10'), 2026, 'Monaco', 'd02', 't02')`
 ];
 const testsql = [
-    'SELECT position, type FROM RACE_RESULT'
+`SELECT POSITION, FIRSTNAME || ' ' || LASTNAME AS FULLNAME
+                 FROM RACE_RESULT NATURAL JOIN DRIVER NATURAL JOIN RACE_SESSION NATURAL JOIN PREDICTION`
 ];
 
 module.exports = {

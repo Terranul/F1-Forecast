@@ -119,11 +119,12 @@ async function loadTeams(season) {
 // ─── Race Sessions (parent table for Race / Sprint / Qualifying / Practice) ───
 async function loadRaceSessions(season) {
     console.log(`entered race sessions`);
-
-    const races = await fetchAll(`/${season}/races`);
+    console.log(`${BASE_URL}/${season}/races?limit=1`);
+    let races = await fetch(`${BASE_URL}/${season}/races?limit=1`);
+    races = await races.json()
     console.log(`finished fetching`);
 
-    await delay(400);
+    //await delay(500);
     console.log(`after 400 delay`);
 
     for (const race of races) {
@@ -387,13 +388,13 @@ async function loadQualyfyingResults(season) {
 
 
 
-    async function test() {
-        const res = await get(`${BASE_URL}/2026/races`);
-        const text = await res.text();
-        console.log("STATUS:", res.status);
-        console.log("CONTENT-TYPE:", res.headers.get("content-type"));
-        console.log("RAW RESPONSE:", text.slice(0, 500)); // print first 500 chars
-    }
+    // async function test() {
+    //     const res = await get(`${BASE_URL}/2026/races`);
+    //     const text = await res.text();
+    //     console.log("STATUS:", res.status);
+    //     console.log("CONTENT-TYPE:", res.headers.get("content-type"));
+    //     console.log("RAW RESPONSE:", text.slice(0, 500)); // print first 500 chars
+    // }
     // ─── main loader ────────────────────────────────────────────────────────────
     /**
      * Called to populate the entire schema for a given season.
@@ -404,10 +405,10 @@ async function loadQualyfyingResults(season) {
         console.log(`\n=== Loading F1 data for season ${season} ===\n`);
 
         
-       await  test();
+       //await  test();
         
-        // // Order matters – parent tables before children
-        // const races = await loadRaceSessions(season);  // RACE_SESSION first
+        // Order matters – parent tables before children
+        const races = await loadRaceSessions(season);  // RACE_SESSION first
         // await loadTeams(season);                         // TEAMBYDEBUT + TEAM
         // await loadDrivers(season);                       // DRIVERBYDEBUT + DRIVER
         // await loadRaces(season, races);                  // RACE
@@ -418,7 +419,7 @@ async function loadQualyfyingResults(season) {
         // await loadQualyfyingResults(season);                    // QUALIRESULT
         // await loadSprintResults(season);                       // SPRRESULT
 
-        // console.log(`\n=== Done loading season ${season} ===\n`);
+        console.log(`\n=== Done loading season ${season} ===\n`);
     }
 
     module.exports = {
