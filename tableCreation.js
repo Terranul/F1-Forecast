@@ -304,7 +304,7 @@ const demoInsertStatements = [
     `INSERT INTO SPRINT_RESULT (type, position, totaltime, season, trackname, driverid, teamid) VALUES ('Sprint', 2, TO_DSINTERVAL('0 00:36:10'), 2026, 'Monaco', 'd02', 't02')`
 ];
 const testsql = [
-    'SELECT position, type FROM RACE_RESULT'
+    'SELECT position, type, pitstops, trackname FROM RACE_RESULT'
 ];
 
 module.exports = {
