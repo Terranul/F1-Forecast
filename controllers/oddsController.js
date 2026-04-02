@@ -1,4 +1,4 @@
-const oddsGenerator = require("./prediction-engine/race-odds")
+const oddsGenerator = require("../prediction-engine/race-odds")
 
 async function getPodiumOdds(req, res) {
      const season = req.body.season

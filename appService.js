@@ -54,7 +54,7 @@ async function withOracleDB(action) {
     let connection;
     try {
         connection = await oracledb.getConnection(); // Gets a connection from the default pool 
-        return await action(connection);   
+        return await action(connection);
     } catch (err) {
         console.error(err);
         throw err;
@@ -98,8 +98,8 @@ async function initiateDemotable() {
             try {
                 await connection.execute(table)
                 console.log("creating table: " + table)
-            } catch(err) {
-                console.log(err + "Issue on table: " + table );
+            } catch (err) {
+                console.log(err + "Issue on table: " + table);
             }
         }
         return true
@@ -109,7 +109,7 @@ async function initiateDemotable() {
 }
 
 async function testInsert() {
-    await withOracleDB( async (connection) => {
+    await withOracleDB(async (connection) => {
         connection.execute(`INSERT INTO RACE SESSION (season, trackname, sessiondate) VALUES (")`)
     })
 }
@@ -118,11 +118,11 @@ async function testInsert() {
 async function insertDemoData() {
     console.log("beginning inserting values")
     await withOracleDB(async (connection) => {
-        for(const insert of tableCreation.demoInsertStatements) {
+        for (const insert of tableCreation.demoInsertStatements) {
             try {
                 await connection.execute(insert, {}, { autoCommit: true });
                 console.log(insert)
-            } catch(err) {
+            } catch (err) {
                 console.log(`Issue inserting values: ${err} at insert statement: ${insert}`);
             }
         }
@@ -134,16 +134,19 @@ async function insertDemoData() {
 // tableName: name of the table, make sure all caps
 // value: object mapping each attribute: {id: "id", name: "name"}
 async function insertToTable(tableName, value) {
-        console.log(value);
-
-    const insertStatement = extractInsertStatement(tableName, value)
-    return await withOracleDB(async (connection) => {
-        await connection.execute(
-            insertStatement,
-            value,
-            { autoCommit: true }
-        )
-    });
+    console.log(value);
+    try {
+        const insertStatement = extractInsertStatement(tableName, value)
+        return await withOracleDB(async (connection) => {
+            await connection.execute(
+                insertStatement,
+                value,
+                { autoCommit: true }
+            )
+        });
+    } catch (err) {
+        console.log(err)
+    }
 }
 
 function extractInsertStatement(tableName, value) {
@@ -170,16 +173,26 @@ function extractInsertStatement(tableName, value) {
      }
 */
 async function executeSql(statement) {
-        console.log(statement);
+    console.log(statement);
 
     try {
         return await withOracleDB(async (connection) => {
             return connection.execute(statement, {}, { autoCommit: true });
-           
+
         });
     } catch (err) {
         console.error("Issue with the formatting in sql entry:" + statement + err);
         return null;
+    }
+}
+
+async function executeSqlBinding(statement, bindings) {
+    try {
+        return await withOracleDB(async (connection) => {
+            connection.execute(statement, bindings, { autoCommit: true })
+        })
+    } catch (err) {
+        console.log("Issue with executing sql binding");
     }
 }
 
@@ -196,9 +209,10 @@ async function testSqlStatements() {
 
 module.exports = {
     testOracleConnection,
-    initiateDemotable, 
+    initiateDemotable,
     insertDemoData,
     insertToTable,
     executeSql,
-    testSqlStatements
+    testSqlStatements,
+    executeSqlBinding
 };

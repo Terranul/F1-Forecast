@@ -89,9 +89,14 @@ async function loadDrivers(season) {
         : [];
 
     for (const driver of drivers) {
-        const standing = standings.find(s => s.Driver.driverId === driver.driverId);
+        const standing = standings.find(s => {
+            //console.log(s.Driver.driverId + " and " + driver.driverId)
+            return s.Driver.driverId === driver.driverId
+        });
 
-        const teamid = standing?.ConstructorS?.constructorId ?? null;
+        console.log(JSON.stringify(standing))
+
+        const teamid = standing?.Constructors[0].constructorId ?? null;
         const drivernumber = driver.permanentNumber;
         const nationality = driver.nationality;
         const firstname = driver.givenName.substring(0, 25);
@@ -244,7 +249,7 @@ async function loadPractice(season) {
   in jolpi at all – we store null for those and you can fill them later.
 */
 async function loadRaceResults(season) {
-    const raceResJson = await get(`${BASE_URL}/${season}/results.json`);
+    const raceResJson = await get(`${BASE_URL}/${season}/results.json?limit=1000`);
     const races = raceResJson.MRData.RaceTable.Races ?? [];
 
     let count = 0;

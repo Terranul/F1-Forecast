@@ -8,6 +8,9 @@ const tableCreations = [
     dateoffirstprediction DATE,
     user_name VARCHAR2(50),
     streak INTEGER,
+    password NUMBER,
+    acc VARCHAR2(50)
+    CONSTRAINT APP_USER_FK FOREIGN KEY (acc) REFERENCES SCORE(acc)
     CONSTRAINT APP_USER_PK PRIMARY KEY (app_userid)
 )`,
 
@@ -80,6 +83,7 @@ const tableCreations = [
     predictionid VARCHAR2(5),
     categoryid VARCHAR2(5),
     prediction_value VARCHAR2(10),
+    odds_value NUMBER,
     date_filed DATE NOT NULL,
     time_filed TIMESTAMP(6) NOT NULL,
     season NUMBER NOT NULL,
@@ -149,10 +153,10 @@ const tableCreations = [
     trackname VARCHAR2(50) NOT NULL,
     driverid VARCHAR2(25) NOT NULL,
     teamid VARCHAR2(25)  NOT NULL,
-    CONSTRAINT RESULT_PK PRIMARY KEY (position, season, trackname, type),
-    CONSTRAINT RESULT_FK_RACE_SESSION FOREIGN KEY (season, trackname) REFERENCES RACE_SESSION(season, trackname) ON DELETE CASCADE,
-    CONSTRAINT RESULT_FK_DRIVER FOREIGN KEY (driverid) REFERENCES DRIVER(driverid) ON DELETE CASCADE,
-    CONSTRAINT RESULT_FK_TEAM FOREIGN KEY (teamid) REFERENCES TEAM(teamid) ON DELETE CASCADE
+    CONSTRAINT RACE_RESULT_PK PRIMARY KEY (position, season, trackname, type),
+    CONSTRAINT RACE_RESULT_FK_RACE_SESSION FOREIGN KEY (season, trackname) REFERENCES RACE_SESSION(season, trackname) ON DELETE CASCADE,
+    CONSTRAINT RACE_RESULT_FK_DRIVER FOREIGN KEY (driverid) REFERENCES DRIVER(driverid) ON DELETE CASCADE,
+    CONSTRAINT RACE_RESULT_FK_TEAM FOREIGN KEY (teamid) REFERENCES TEAM(teamid) ON DELETE CASCADE
 )`,
 
 `CREATE TABLE QUALI_RESULT (
@@ -180,10 +184,10 @@ const tableCreations = [
     trackname VARCHAR2(50) NOT NULL,
     driverid VARCHAR2(25) NOT NULL,
     teamid VARCHAR2(25) NOT NULL,
-    CONSTRAINT SPRINTRES_PK PRIMARY KEY (position, season, trackname, type),
-    CONSTRAINT SPRINTRES_FK_RACE_SESSION FOREIGN KEY (season, trackname) REFERENCES RACE_SESSION(season, trackname) ON DELETE CASCADE,
-    CONSTRAINT SPRINTRES_FK_DRIVER FOREIGN KEY (driverid) REFERENCES DRIVER(driverid) ON DELETE CASCADE,
-    CONSTRAINT SPRINTRES_FK_TEAM FOREIGN KEY (teamid) REFERENCES TEAM(teamid) ON DELETE CASCADE
+    CONSTRAINT SPRINT_RESULT_PK PRIMARY KEY (position, season, trackname, type),
+    CONSTRAINT SPRINT_RESULT_FK_RACE_SESSION FOREIGN KEY (season, trackname) REFERENCES RACE_SESSION(season, trackname) ON DELETE CASCADE,
+    CONSTRAINT SPRINT_RESULT_FK_DRIVER FOREIGN KEY (driverid) REFERENCES DRIVER(driverid) ON DELETE CASCADE,
+    CONSTRAINT SPRINT_RESULT_FK_TEAM FOREIGN KEY (teamid) REFERENCES TEAM(teamid) ON DELETE CASCADE
 )`
 ];
 
@@ -304,7 +308,10 @@ const demoInsertStatements = [
     `INSERT INTO SPRINT_RESULT (type, position, totaltime, season, trackname, driverid, teamid) VALUES ('Sprint', 2, TO_DSINTERVAL('0 00:36:10'), 2026, 'Monaco', 'd02', 't02')`
 ];
 const testsql = [
-    'SELECT position, type, pitstops, trackname FROM RACE_RESULT'
+`SELECT type
+FROM (
+    SELECT * FROM RACE_SESSION rs JOIN RACE_RESULT rr ON rs.trackname=rr.trackname
+)`
 ];
 
 module.exports = {
