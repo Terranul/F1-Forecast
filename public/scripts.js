@@ -65,13 +65,13 @@ async function fetchAndDisplayUsers() {
 // This function resets or initializes the demotable.
 async function resetDemotable() {
     console.log("hit reset demotable")
-    const result = await fetch("/category/driverodds/odds", {
+    const result = await fetch("/category/podiumodds/odds", {
     method: "POST",
     headers: {
         "Content-Type": "application/json"
     },
     body: JSON.stringify({
-        trackname: "Australian Grand Prix"
+        season: 2026
     })
 });
     // const result = await fetch("/users/test/predictions/prdct", {

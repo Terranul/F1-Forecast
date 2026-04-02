@@ -14,7 +14,7 @@ async function getOdds(req, res) {
     try {
         switch (categoryid) {
             case "driverodds":
-                const driverData = await oddsGenerator.calculateDriverOddsForRace(req.body.trackname);
+                const driverData = await oddsGenerator.calculateDriverOddsForRace(req.body.trackname, req.body.season);
                 response = await formatResponse(driverData, categoryid);
                 break;
             case "teamraceodds":
@@ -27,6 +27,7 @@ async function getOdds(req, res) {
                 break;
         }
     } catch (error) {
+        console.log(error)
         res.status(500).json({error: "internal server error"})
         return;
     }

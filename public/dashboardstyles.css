@@ -1,0 +1,18 @@
+body {
+    background-color: black;
+    color: wheat
+}
+
+.container {
+    display: grid;
+    gap: 20vh;
+    grid-template-columns: repeat(2, 2fr);
+    text-align: center;
+}
+
+.user-profile, .odds, .friends, .prev-scores {
+    background-color: maroon;
+    padding: 100px;
+    color: wheat;
+    border-radius: 20px;
+}

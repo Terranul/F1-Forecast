@@ -1,7 +1,11 @@
 const appService = require('../appService');
 
 async function getUser(req, res) {
-    const user = await appService.executeSql(`SELECT * FROM APP_USER WHERE USER_NAME='${req.params.user}'`)
+    const user = await appService.executeSql(`SELECT *
+                                              FROM APP_USER NATURAL JOIN SCORE
+                                              WHERE USER_NAME='${req.params.user}'`)
+    console.log("getting user")
+    console.log(JSON.stringify(user))
     delete user.rows[0].PASSWORD
     res.status(200).json(user.rows[0]);
 }
@@ -9,6 +13,7 @@ async function getUser(req, res) {
 async function putUser(req, res) {
     const user_name = req.params.user;
     const password = req.body.password;
+    console.log(user_name + password)
     const dateoffirstprediction = new Date(); // by default will represent the time of the code being executed
     const app_userid = user_name + "!userid"
     const acc = user_name + "acc"; // only ever used internally, so no reason to make it any different
@@ -85,12 +90,28 @@ async function getUsers(req, res) {
 }
 
 async function loginUser(req, res) {
+    console.log(req.params.user)
+    console.log(req.body.password)
     const user = await appService.executeSql(`SELECT * FROM APP_USER WHERE USER_NAME='${req.params.user}'`)
-    if (user.rows[0].PASSWORD === req.body.password) {
+    console.log(JSON.stringify(user))
+    console.log(user.rows[0].PASSWORD)
+    if (user.rows[0].PASSWORD == req.body.password) {
         res.status(200).send();
     } else {
         res.status(404).send();
     }
+}
+
+async function updateUserScores(req, res) {
+    const acc = req.params.username + "acc";
+    const body = req.body;
+    for (const key of Object.keys(body)) {
+        const sql = `UPDATE SCORE
+                     SET ${key} = ${body[key]}
+                     WHERE ACC=${acc}`
+        await appService.executeSql(sql);                 
+    }
+    res.status(204).send()
 }
 
 module.exports = {
@@ -99,5 +120,6 @@ module.exports = {
     getUser,
     getUserFriends,
     getUsers,
-    loginUser
+    loginUser,
+    updateUserScores
 }
