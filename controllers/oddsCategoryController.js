@@ -34,8 +34,9 @@ async function getOdds(req, res) {
 }
 
 async function formatResponse(data, categoryid) {
-    //const categoryDesc = await getCategoryDesc(categoryid);
+    const categoryDesc = await getCategoryDesc(categoryid);
     return {
+        description: categoryDesc,
         categoryid: categoryid,
         odds: data
     }
@@ -44,7 +45,7 @@ async function formatResponse(data, categoryid) {
 async function getCategoryDesc(categoryid) {
     const sql = `SELECT NAME 
                  FROM CATEGORY
-                 WHERE CATEGORYID=${categoryid}`
+                 WHERE CATEGORYID='${categoryid}'`
     const name = await appService.executeSql(sql);
     return name.rows[0].NAME
 }
