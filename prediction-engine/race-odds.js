@@ -8,46 +8,58 @@ const POSITION_WEIGHT = 1000
 // finishes_to_consider details how many of the most recent overall and track specific finishes to consider when calculating
 // position_weight details how much to multiply position values in the final equation
 async function calculateRaceOdd(Driver_id, track_name) {
-    let sql = `SELECT ACCUMULATEDPOINTS FROM DRIVER WHERE DRIVERID=${Driver_id}`
+    let sql = `SELECT ACCUMULATEDPOINTS FROM DRIVER WHERE DRIVERID='${Driver_id}'`
     const accumulatedPoints = await appService.executeSql(sql);
 
+
     sql = `SELECT SUM(POSITION) AS TOTAL_TRACK_POSITION
-           FROM DRIVER NATURAL JOIN RACE_RESULT r
-           WHERE DRIVERID=${Driver_id} AND r.TRACKNAME=${track_name}
-           ORDER BY r.SESSIONDATE DESC
-           FETCH FIRST ${MAX_RACES_TO_CONSIDER} ROWS ONLY`
+           FROM (
+            SELECT POSITION
+            FROM DRIVER NATURAL JOIN RACE_RESULT NATURAL JOIN RACE_SESSION
+            WHERE DRIVERID = '${Driver_id}' AND TRACKNAME='${track_name}'
+            ORDER BY SESSIONDATE ASC
+            FETCH FIRST ${TOP_FINISHES_TO_CONSIDER} ROWS ONLY
+           )`
     const recentFinishesOnTrack = await appService.executeSql(sql)
 
-    sql = `SELECT SUM(POSITION) AS TOTAL_POSITION 
-           FROM DRIVER NATURAL JOIN RACE_RESULT r
-           WHERE DRIVERID=${Driver_id}
-           ORDER BY r.SESSIONDATE DESC
-           FETCH FIRST ${MAX_RACES_TO_CONSIDER} ROWS ONLY`
+    sql = `SELECT SUM(POSITION) AS TOTAL_POSITION
+           FROM (
+            SELECT POSITION
+            FROM DRIVER NATURAL JOIN RACE_RESULT NATURAL JOIN RACE_SESSION
+            WHERE DRIVERID = '${Driver_id}'
+            ORDER BY SESSIONDATE ASC
+            FETCH FIRST ${TOP_FINISHES_TO_CONSIDER} ROWS ONLY
+           )`
     const recentFinishes = await appService.executeSql(sql)
 
     if (recentFinishesOnTrack.rows.length === 0 || recentFinishes.rows.length === 0) {
         return 0;
     }
+
+    console.log(JSON.stringify(accumulatedPoints.rows))
+    console.log(JSON.stringify(recentFinishesOnTrack.rows))
     
     // larger position scores mean a driver did worse, so we'll fix this by taking the recipricol and multiplying by a constant
     return transformPosition(accumulatedPoints.rows[0].ACCUMULATEDPOINTS)
            + transformPosition(recentFinishesOnTrack.rows[0].TOTAL_TRACK_POSITION)
-           + transformPosition(ecentFinishes.rows[0].TOTAL_POSITION)
+           + transformPosition(recentFinishes.rows[0].TOTAL_POSITION)
 }
 
 function transformPosition(value) {
+    console.log("transform position " + value)
+    if (value === 0) {return 0};
     return 1/value * POSITION_WEIGHT
 }
 
-async function calculateDriverOddsForRace(track_name, season) {
+async function calculateDriverOddsForRace(track_name) {
     const oddsData = []
-    const sqlActiveDrivers = `SELECT DRIVERID
-                              FROM RESULT r NATURAL JOIN RACE_SESSION s
-                              WHERE SEASON=${season} AND TRACKNAME=${track_name}`
-    const activeDrivers = await appService.executeSql(sqlActiveDrivers);
+    const sqlActiveDrivers = `SELECT DISTINCT DRIVERID
+                              FROM RACE_RESULT NATURAL JOIN RACE_SESSION
+                              WHERE TRACKNAME='${track_name}'`
+    const activeDrivers = await appService.executeSql(sqlActiveDrivers)
     for (const driver_info of activeDrivers.rows) {
-        const odds = await calculateRaceOdd(driver_info.DRIVER_ID, track_name);
-        oddsData.push({id: driver_info.DRIVER_ID, odd: odds})
+        const odds = await calculateRaceOdd(driver_info.DRIVERID, track_name);
+        oddsData.push({driverid: driver_info.DRIVERID, odd: odds})
     }
     return formatOdds(oddsData)
 }
@@ -56,25 +68,28 @@ async function calculateDriverOddsForRace(track_name, season) {
 // this one is a simple calculation, just looking at the total points for every team
 
 async function getTeamsForSeason(season) {
-    const sql = `SELECT t.NAME AS NAME, t.POINTS AS POINTS
-                 FROM TAKEPART NATURAL JOIN DRIVER d NATURAL JOIN TEAM t
-                 WHERE SEASON=${season}
-                 GROUP BY t.NAME, t.POINTS`
+    const sql = `SELECT DISTINCT NAME, POINTS
+                 FROM TEAM NATURAL JOIN RACE_RESULT NATURAL JOIN RACE_SESSION
+                 WHERE SEASON=${season}`
     const dataResult = await appService.executeSql(sql)
     return dataResult.rows
 }
+
+const reductionFactor = 2; // manually increases the denominator on the total points to reduce the odds
 
 // generate points for who will get the most points in a given race based on how many current points the have
 async function getOddsForTopPoints(season) {
     const returnData = []
     const data = await getTeamsForSeason(season)
-    const totalPointOverall = calculatePointsForAllTeams(data);
+    const totalPointOverall = calculatePointsForAllTeams(data)
     for (const team of data) {
-        const odds = team.POINTS/totalPointOverall;
+        const odds = totalPointOverall/(team.POINTS*reductionFactor);
+        if (team.POINTS === 0) {odds = totalPointOverall} // sad :(
+        if (odds <= 1) {odds = 1.02}
         returnData.push({
             teamName: team.NAME,
             totalPoints: team.POINTS,
-            odds: odds
+            odds: odds 
         })
     }
     return returnData
@@ -82,8 +97,8 @@ async function getOddsForTopPoints(season) {
 
 function calculatePointsForAllTeams(data) {
     return data.reduce((acc, value) => {
-        return acc  + value.POINTS
-    })
+        return acc + value.POINTS;
+    }, 0);
 }
 
 // mentally prepare yourself before reading how I'm calculating odds
@@ -93,10 +108,14 @@ function formatOdds(data) {
     // approach:
     // find the highest value (highest chance of winning) and set it's odds to 1.1
     // for each value after the highest value, find the multiplication factor and multiply this with the 1.1
+    console.log(JSON.stringify(data) + "fromat odds")
+
 
     const sortedData = data.sort((a, b) => {
         return b.odd - a.odd;
     })
+
+    console.log(JSON.stringify(sortedData))
 
     const baseFactor = sortedData[0].odd
 
@@ -104,6 +123,8 @@ function formatOdds(data) {
         const factor = baseFactor / value.odd;
         value.odd = factor * 1.1
     })
+
+    console.log("passed format odds")
 
     return sortedData
 }
@@ -222,6 +243,7 @@ async function getPodiumDrivers(season) {
                  HAVING COUNT(*) >= 1
                  ORDER BY PODIUMS DESC`
     const frequentPodiums = await appService.executeSql(sql);
+    console.log("correcly got podiuum drivers")
     return frequentPodiums.rows;
 }
 
@@ -229,14 +251,16 @@ async function getPodiumDrivers(season) {
 async function getOddsForPodiums(season) {
     const returnData = []
     const podiumData = await getPodiumDrivers(season);
-    for (driver of podiumData) {
+    console.log(JSON.stringify(podiumData))
+    for (const driver of podiumData) {
         returnData.push({
-            name: DRIVER.FULLNAME,
-            careerPodiumFinishes: driver.PODIUMS,
+            name: driver.FULLNAME,
+            seasonPodiumFinishes: driver.PODIUMS,
             odds: driver.PODIUMS // potentially unbalanced but what the heck
         })
     }
-    return podiumData
+    console.log(JSON.stringify(returnData))
+    return returnData
 }
 
 

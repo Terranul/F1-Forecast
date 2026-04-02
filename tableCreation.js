@@ -3,14 +3,22 @@ const tableCreations = [
     id NUMBER PRIMARY KEY
 )`,
 
+    `CREATE TABLE SCORE (
+    ranking INTEGER,
+    acc VARCHAR2(50),
+    amount INTEGER,
+    deductions INTEGER,
+    CONSTRAINT SCORE_PK PRIMARY KEY (acc)
+)`,
+
     `CREATE TABLE APP_USER (
     app_userid VARCHAR2(25),
     dateoffirstprediction DATE,
     user_name VARCHAR2(50),
     streak INTEGER,
     password NUMBER,
-    acc VARCHAR2(50)
-    CONSTRAINT APP_USER_FK FOREIGN KEY (acc) REFERENCES SCORE(acc)
+    acc VARCHAR2(50),
+    CONSTRAINT APP_USER_FK FOREIGN KEY (acc) REFERENCES SCORE(acc),
     CONSTRAINT APP_USER_PK PRIMARY KEY (app_userid)
 )`,
 
@@ -43,17 +51,9 @@ const tableCreations = [
     
 )`,
 
-    `CREATE TABLE SCORE (
-    ranking INTEGER,
-    acc VARCHAR2(50),
-    amount INTEGER,
-    deductions INTEGER,
-    CONSTRAINT SCORE_PK PRIMARY KEY (ranking, acc)
-)`,
-
 `CREATE TABLE CATEGORY (
-    categoryid VARCHAR2(5),
-    name VARCHAR2(50),
+    categoryid VARCHAR2(20),
+    name VARCHAR2(100),
     CONSTRAINT CATEGORY_PK PRIMARY KEY (categoryid)
 )`,
 
@@ -81,7 +81,7 @@ const tableCreations = [
 
     `CREATE TABLE PREDICTION (
     predictionid VARCHAR2(5),
-    categoryid VARCHAR2(5),
+    categoryid VARCHAR2(20),
     prediction_value VARCHAR2(10),
     odds_value NUMBER,
     date_filed DATE NOT NULL,
@@ -308,10 +308,7 @@ const demoInsertStatements = [
     `INSERT INTO SPRINT_RESULT (type, position, totaltime, season, trackname, driverid, teamid) VALUES ('Sprint', 2, TO_DSINTERVAL('0 00:36:10'), 2026, 'Monaco', 'd02', 't02')`
 ];
 const testsql = [
-`SELECT type
-FROM (
-    SELECT * FROM RACE_SESSION rs JOIN RACE_RESULT rr ON rs.trackname=rr.trackname
-)`
+    `SELECT * FROM APP_USER`
 ];
 
 module.exports = {

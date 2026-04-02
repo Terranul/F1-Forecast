@@ -12,6 +12,11 @@ async function getCurrentSession(req, res) {
                 )
                 ORDER BY SESSIONDATE ASC`
     const result = await appService.executeSqlBinding(sql, {curDate: currentDate})
-    res.status(204).json(result.rows[0]);
+    console.log(JSON.stringify(result.rows[0]))
+    res.status(200).json(result.rows[0]);
     
+}
+
+module.exports = {
+    getCurrentSession
 }
