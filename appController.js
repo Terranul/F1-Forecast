@@ -31,7 +31,7 @@ router.post("/initiate-demotable", async (req, res) => {
     const initiateResult = await appService.initiateDemotable();
     console.log('finished inserting demotables')
     if (true) {
-        await appService.insertDemoData()
+       await appService.insertDemoData()
         // now test the db by inserting data after the fac
         // awt
         await appService.testSqlStatements()

@@ -134,6 +134,8 @@ async function insertDemoData() {
 // tableName: name of the table, make sure all caps
 // value: object mapping each attribute: {id: "id", name: "name"}
 async function insertToTable(tableName, value) {
+        console.log(value);
+
     const insertStatement = extractInsertStatement(tableName, value)
     return await withOracleDB(async (connection) => {
         await connection.execute(
@@ -152,7 +154,7 @@ function extractInsertStatement(tableName, value) {
     }
     mappingString = mappingString.slice(0, -1); // removes the ending ","
     const cleanMapping = mappingString.replaceAll(":", "");
-    console.log(`INSERT INTO ${tableName} (${cleanMapping}) VALUES (${mappingString})`)
+    //console.log(`INSERT INTO ${tableName} (${cleanMapping}) VALUES (${mappingString})`)
     return `INSERT INTO ${tableName} (${cleanMapping}) VALUES (${mappingString})`;
 }
 
@@ -168,12 +170,15 @@ function extractInsertStatement(tableName, value) {
      }
 */
 async function executeSql(statement) {
+        console.log(statement);
+
     try {
         return await withOracleDB(async (connection) => {
-            return connection.execute(statement);
+            return connection.execute(statement, {}, { autoCommit: true });
+           
         });
     } catch (err) {
-        console.error("Issue with the formatting in sql entry:" + err);
+        console.error("Issue with the formatting in sql entry:" + statement + err);
         return null;
     }
 }
