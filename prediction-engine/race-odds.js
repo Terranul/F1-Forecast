@@ -137,7 +137,7 @@ async function getAverageCircuitTime(season, trackName) {
                 'SECOND'
             ) AS avg_time
             FROM RACE_RESULTS NATURAL JOIN RACE_SESSION
-            WHERE SEASON = ${season} AND TRACKNAME = ${trackName}
+            WHERE TRACKNAME = ${trackName}
       )
 )`;
     const result = await appService.executeSql(sql);
@@ -150,13 +150,13 @@ async function getAverageCircuitTime(season, trackName) {
 async function getLowestCircuitTime(season, trackName) {
     const sql = `
         SELECT
-            FLOOR(EXTRACT(DAY FROM MIN_TIME)*24 + EXTRACT(HOUR FROM avg_time)) AS MIN_HOURS,
+            FLOOR(EXTRACT(DAY FROM MIN_TIME)*24 + EXTRACT(HOUR FROM MIN_TIME)) AS MIN_HOURS,
             EXTRACT(MINUTE FROM MIN_TIME) AS AVG_MINUTES,
             EXTRACT(SECOND FROM MIN_TIME) AS AVG_SECONDS
         FROM (
             SELECT MIN(TOTALTIME) AS MIN_TIME
             FROM RACE_RESULTS NATURAL JOIN RACE_SESSION
-            WHERE SEASON = ${season} AND TRACKNAME = ${trackName}
+            WHERE TRACKNAME = ${trackName}
         )
     `;
     const result = await appService.executeSql(sql);
@@ -167,13 +167,13 @@ async function getLowestCircuitTime(season, trackName) {
 async function getHighestCircuitTime(season, trackName) {
     const sql = `
         SELECT
-            FLOOR(EXTRACT(DAY FROM MAX_TIME)*24 + EXTRACT(HOUR FROM avg_time)) AS MAX_HOURS,
+            FLOOR(EXTRACT(DAY FROM MAX_TIME)*24 + EXTRACT(HOUR FROM MAX_TIME)) AS MAX_HOURS,
             EXTRACT(MINUTE FROM MAX_TIME) AS AVG_MINUTES,
             EXTRACT(SECOND FROM MAX_TIME) AS AVG_SECONDS
         FROM (
             SELECT MAX(TOTALTIME) AS MAX_TIME
             FROM RACE_RESULTS NATURAL JOIN RACE_SESSION
-            WHERE SEASON = ${season} AND TRACKNAME = ${trackName}
+            WHERE TRACKNAME = ${trackName}
         )
     `;
     const result = await appService.executeSql(sql);
@@ -219,7 +219,7 @@ async function getPodiumDrivers(season) {
                  FROM RACE_RESULT NATURAL JOIN DRIVER
                  WHERE SEASON=${season} AND POSITION <= 3
                  GROUP BY DRIVERID, FIRSTNAME, LASTNAME
-                 HAVING COUNT(*) >= 5
+                 HAVING COUNT(*) >= 1
                  ORDER BY PODIUMS DESC`
     const frequentPodiums = await appService.executeSql(sql);
     return frequentPodiums.rows;

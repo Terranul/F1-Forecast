@@ -62,7 +62,7 @@ async function validateTopTeam(predictionid) {
             validation: false,
             odds: teamName.rows[0].ODDS_VALUE,
             teamName: teamName.rows[0].NAME,
-            points: teamByPoints.rows.find((value, _, _) => {
+            points: teamByPoints.rows.find((value) => {
                 return value.NAME === teamName.rows[0].NAME
             })
         }
