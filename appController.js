@@ -1,11 +1,11 @@
 const express = require('express');
 const appService = require('./appService');
 const f1apiService = require('./JolpiApi');
-const oddsController = require('./controllers/oddsController');
 const predictionController = require('./controllers/predictionController');
 const userController = require('./controllers/userController');
 const sessionController = require('./controllers/sessionController');
 const validationController = require('./controllers/validationController');
+const oddsController = require('./controllers/oddsCategoryController')
 
 const router = express.Router();
 
@@ -27,16 +27,16 @@ router.get('/demotable', async (req, res) => {-
 });
 
 router.post("/initiate-demotable", async (req, res) => {
-    console.log('going to insert demotables')
+    //console.log('going to insert demotables')
     //const initiateResult = await appService.initiateDemotable();
-    console.log('finished inserting demotables')
+    //console.log('finished inserting demotables')
     if (true) {
        //await appService.insertDemoData()
         //now test the db by inserting data after the fact
-        await appService.testSqlStatements()
+        //await appService.testSqlStatements()
          //await f1apiService.loadAllData(2026);
-        //await f1apiService.loadAllData(2025);
-        //await f1apiService.loadAllData(2024);
+       // await f1apiService.loadAllData(2025);
+       //await f1apiService.loadAllData(2024);
         //await appService.insertToTable("CATEGORY", {id: "c03", name: "testing"});
         //await appService.executeSql(`INSERT INTO TEAM (points, name, teamid, nationality) VALUES (150, 'Red Racers', 't01', 'USA')`)
         //const result = await appService.executeSql("SELECT * FROM SPRINT")
@@ -92,6 +92,8 @@ router.put('/users/user/friends/:friend', userController.putFriend)
 router.get('/users/:user/predictions', predictionController.getPredictions)
 router.put('/users/:user/predictions/:prediction', predictionController.putPrediction)
 router.get('/users/:user/predictions/:prediction/validate')
+
+router.post('/category/:categoryid/odds', oddsController.getOdds)
 
 
 module.exports = router;

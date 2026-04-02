@@ -52,8 +52,8 @@ const tableCreations = [
 )`,
 
 `CREATE TABLE CATEGORY (
-    categoryid VARCHAR2(5),
-    name VARCHAR2(50),
+    categoryid VARCHAR2(20),
+    name VARCHAR2(100),
     CONSTRAINT CATEGORY_PK PRIMARY KEY (categoryid)
 )`,
 
@@ -81,7 +81,7 @@ const tableCreations = [
 
     `CREATE TABLE PREDICTION (
     predictionid VARCHAR2(5),
-    categoryid VARCHAR2(5),
+    categoryid VARCHAR2(20),
     prediction_value VARCHAR2(10),
     odds_value NUMBER,
     date_filed DATE NOT NULL,
@@ -308,9 +308,16 @@ const demoInsertStatements = [
     `INSERT INTO SPRINT_RESULT (type, position, totaltime, season, trackname, driverid, teamid) VALUES ('Sprint', 2, TO_DSINTERVAL('0 00:36:10'), 2026, 'Monaco', 'd02', 't02')`
 ];
 const testsql = [
-`SELECT type
+    `SELECT DISTINCT DRIVERID
+                              FROM RACE_RESULT r NATURAL JOIN RACE_SESSION s
+                              WHERE  TRACKNAME='Chinese Grand Prix'`,
+    `SELECT SUM(POSITION) AS TOTAL_POSITION
 FROM (
-    SELECT * FROM RACE_SESSION rs JOIN RACE_RESULT rr ON rs.trackname=rr.trackname
+    SELECT POSITION
+    FROM DRIVER NATURAL JOIN RACE_RESULT NATURAL JOIN RACE_SESSION
+    WHERE DRIVERID = 'arvid_lindblad'
+    ORDER BY SESSIONDATE ASC
+    FETCH FIRST 10 ROWS ONLY
 )`
 ];
 
