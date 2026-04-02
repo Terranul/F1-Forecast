@@ -51,11 +51,11 @@ function transformPosition(value) {
     return 1/value * POSITION_WEIGHT
 }
 
-async function calculateDriverOddsForRace(track_name) {
+async function calculateDriverOddsForRace(track_name, season) {
     const oddsData = []
     const sqlActiveDrivers = `SELECT DISTINCT DRIVERID
                               FROM RACE_RESULT NATURAL JOIN RACE_SESSION
-                              WHERE TRACKNAME='${track_name}'`
+                              WHERE SEASON='${season}'`
     const activeDrivers = await appService.executeSql(sqlActiveDrivers)
     for (const driver_info of activeDrivers.rows) {
         const odds = await calculateRaceOdd(driver_info.DRIVERID, track_name);
@@ -83,7 +83,7 @@ async function getOddsForTopPoints(season) {
     const data = await getTeamsForSeason(season)
     const totalPointOverall = calculatePointsForAllTeams(data)
     for (const team of data) {
-        const odds = totalPointOverall/(team.POINTS*reductionFactor);
+        let odds = totalPointOverall/(team.POINTS*reductionFactor);
         if (team.POINTS === 0) {odds = totalPointOverall} // sad :(
         if (odds <= 1) {odds = 1.02}
         returnData.push({

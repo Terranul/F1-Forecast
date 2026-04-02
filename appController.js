@@ -101,11 +101,12 @@ router.put('/users/:user/predictions/:prediction', predictionController.putPredi
 router.get('/users/:user/predictions/:prediction/validate')
 
 router.post('/users/:user/login', userController.loginUser)
+router.put('/users/:user/score', userController.updateUserScores)
 
 // ones that work below
 
 router.post('/category/:categoryid/odds', oddsController.getOdds)
 router.get('/sessions/current', sessionController.getCurrentSession)
 
-
+//TODO : add frIEND TO FRONTEND ;)
 module.exports = router;
