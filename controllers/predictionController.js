@@ -5,19 +5,23 @@ const appService = require('../appService');
     Format for req body:
     {
         categoryid: string,
-        app_userid: string,
         driverid: string,
         season: number,
         trackname: string,
         date_filed: string in YYYY-MM-DD form
-        prediction_value: string
+        prediction_value: string,
+        odds_value: number,
         time_filed: string in HH:MM:SS form
     }
 */
 async function putPrediction(req, res) {
     const values = req.body;
+    const now = new Date()
     // the req.body already has everything except the prediction id
     values.predictionid = req.params.prediction;
+    values.app_userid = req.params.user + "!userid";
+    values.time_filed = now;
+    values.date_filed = now;
     // quick check to make sure there are no missing fields
     if (Object.keys(values).length !== 10) {
         res.status(422).json({error: "missing a required field"});
@@ -37,7 +41,7 @@ async function getPredictions(req, res) {
     const app_userid = req.params.user;
     const sql = `SELECT *
                  FROM APP_USER NATURAL JOIN PREDICTION
-                 WHERE APP_USERID=${app_userid}`
+                 WHERE APP_USERID='${app_userid}!userid'`
     try {
         const userPredictions = await appService.executeSql(sql);
         res.status(200).json(userPredictions.rows)

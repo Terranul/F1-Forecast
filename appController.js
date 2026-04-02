@@ -27,6 +27,9 @@ router.get('/demotable', async (req, res) => {-
 });
 
 router.post("/initiate-demotable", async (req, res) => {
+    // await appService.insertToTable("CATEGORY", {categoryid: "driverodds", name: "Odds for a given driver to win the race"})
+    // await appService.insertToTable("CATEGORY", {categoryid: "teamraceodds", name: "Odds for a given team to accumulate the most points in a race"})
+    // await appService.insertToTable("CATEGORY", {categoryid: "podiumodds", name: "Odds for a driver with podium finishes this season to finish off the podium"})
     //console.log('going to insert demotables')
     //const initiateResult = await appService.initiateDemotable();
     //console.log('finished inserting demotables')

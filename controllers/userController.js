@@ -13,6 +13,7 @@ async function putUser(req, res) {
     const app_userid = user_name + "!userid"
     const acc = user_name + "acc"; // only ever used internally, so no reason to make it any different
     try {
+        // since the app_userid is the primary key, if a duplicate username will occur, the insertToTable will throw and we catch it here
         await uploadDefaultScore(acc)
         await appService.insertToTable("APP_USER", {
             user_name: user_name,
@@ -25,7 +26,7 @@ async function putUser(req, res) {
         res.status(200).json({message: "No one's going to be reading this, but well done, you just created a user!"})
     } catch (err) {
         console.log("Issue creating user: " + user_name)
-        res.status(500).json({error: "internal server error"})
+        res.status(422).json({error: `username: ${user_name} already exists`})
     }
 }
 

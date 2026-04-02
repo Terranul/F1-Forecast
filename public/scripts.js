@@ -74,11 +74,19 @@ async function resetDemotable() {
 //         password: "abcdefg"
 //     })
 // });
-    const result = await fetch("/users/test/friends/test2", {
+    const result = await fetch("/users/test/predictions/prdct", {
         method: "PUT",
         headers: {
         "Content-Type": "application/json"
-        }
+        },
+        body: JSON.stringify({
+            categoryid: "driverodds",
+            driverid: "albon",
+            season: 2026,
+            trackname: "Australian Grand Prix",
+            prediction_value: "undefined",
+            odds_value: 1.1,
+        })
     })
     const response = await fetch("/initiate-demotable", {
         method: 'POST'
