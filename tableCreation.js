@@ -3,14 +3,22 @@ const tableCreations = [
     id NUMBER PRIMARY KEY
 )`,
 
+    `CREATE TABLE SCORE (
+    ranking INTEGER,
+    acc VARCHAR2(50),
+    amount INTEGER,
+    deductions INTEGER,
+    CONSTRAINT SCORE_PK PRIMARY KEY (acc)
+)`,
+
     `CREATE TABLE APP_USER (
     app_userid VARCHAR2(25),
     dateoffirstprediction DATE,
     user_name VARCHAR2(50),
     streak INTEGER,
     password NUMBER,
-    acc VARCHAR2(50)
-    CONSTRAINT APP_USER_FK FOREIGN KEY (acc) REFERENCES SCORE(acc)
+    acc VARCHAR2(50),
+    CONSTRAINT APP_USER_FK FOREIGN KEY (acc) REFERENCES SCORE(acc),
     CONSTRAINT APP_USER_PK PRIMARY KEY (app_userid)
 )`,
 
@@ -41,14 +49,6 @@ const tableCreations = [
     CONSTRAINT DRIVER_PK PRIMARY KEY (driverid),
     CONSTRAINT DRIVER_FK_TEAM FOREIGN KEY (teamid) REFERENCES TEAM(teamid) ON DELETE CASCADE
     
-)`,
-
-    `CREATE TABLE SCORE (
-    ranking INTEGER,
-    acc VARCHAR2(50),
-    amount INTEGER,
-    deductions INTEGER,
-    CONSTRAINT SCORE_PK PRIMARY KEY (ranking, acc)
 )`,
 
 `CREATE TABLE CATEGORY (
@@ -308,17 +308,7 @@ const demoInsertStatements = [
     `INSERT INTO SPRINT_RESULT (type, position, totaltime, season, trackname, driverid, teamid) VALUES ('Sprint', 2, TO_DSINTERVAL('0 00:36:10'), 2026, 'Monaco', 'd02', 't02')`
 ];
 const testsql = [
-    `SELECT DISTINCT DRIVERID
-                              FROM RACE_RESULT r NATURAL JOIN RACE_SESSION s
-                              WHERE  TRACKNAME='Chinese Grand Prix'`,
-    `SELECT SUM(POSITION) AS TOTAL_POSITION
-FROM (
-    SELECT POSITION
-    FROM DRIVER NATURAL JOIN RACE_RESULT NATURAL JOIN RACE_SESSION
-    WHERE DRIVERID = 'arvid_lindblad'
-    ORDER BY SESSIONDATE ASC
-    FETCH FIRST 10 ROWS ONLY
-)`
+    `SELECT * FROM APP_USER`
 ];
 
 module.exports = {

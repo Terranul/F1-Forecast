@@ -1,7 +1,7 @@
 const appService = require('../appService');
 
 async function getUser(req, res) {
-    const user = await appService.executeSql(`SELECT * FROM APP_USER WHERE USER_NAME=${req.params.user}`)
+    const user = await appService.executeSql(`SELECT * FROM APP_USER WHERE USER_NAME='${req.params.user}'`)
     delete user.rows[0].PASSWORD
     res.status(200).json(user.rows[0]);
 }
@@ -44,7 +44,7 @@ async function getUserFriends(req, res) {
     const sql = `SELECT * 
                  FROM FRIEND f
                  JOIN APP_USER a ON f.USER2ID = a.APP_USERID
-                 WHERE f.USER1ID=${user_name + "!userid"}`
+                 WHERE f.USER1ID='${user_name + "!userid"}'`
     try {
         const friends = await appService.executeSql(sql);
         // we need to remove all of the password attributes from each entry
@@ -59,12 +59,13 @@ async function getUserFriends(req, res) {
 }
 
 async function putFriend(req, res) {
+    console.log("entered friend")
     const friendUsername = req.params.friend
     const username = req.params.user
     try {
         await appService.insertToTable("FRIEND", {
-            user1id: username,
-            user2id: friendUsername
+            user1id: username + "!userid",
+            user2id: friendUsername + "!userid"
         })
         res.status(202).json({user1id: username, user2id: friendUsername})
     } catch (err) {
@@ -82,10 +83,20 @@ async function getUsers(req, res) {
     res.status(200).json(allUsers.rows);
 }
 
+async function loginUser(req, res) {
+    const user = await appService.executeSql(`SELECT * FROM APP_USER WHERE USER_NAME='${req.params.user}'`)
+    if (user.rows[0].PASSWORD === req.body.password) {
+        res.status(200).send();
+    } else {
+        res.status(404).send();
+    }
+}
+
 module.exports = {
     putFriend,
     putUser,
     getUser,
     getUserFriends,
-    getUsers
+    getUsers,
+    loginUser
 }
