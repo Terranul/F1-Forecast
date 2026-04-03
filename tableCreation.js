@@ -195,9 +195,6 @@ const tableCreations = [
 // the foreign key attributes that reference the table we are trying to delete, then we can drop the table with no issues.
 // this means we will be left with tables that are no longer connected by any foreign keys, but it's all good becuase we're deleting them too.
 const deleteStatements = [
-    `DROP TABLE PREDICTIONSCORE CASCADE CONSTRAINTS`,
-    `DROP TABLE FRIEND CASCADE CONSTRAINTS`,
-    `DROP TABLE PREDICTION CASCADE CONSTRAINTS`,
     `DROP TABLE RESULT CASCADE CONSTRAINTS`,
     `DROP TABLE QUALIFYING CASCADE CONSTRAINTS`,
     `DROP TABLE SPRINT CASCADE CONSTRAINTS`,
@@ -205,10 +202,7 @@ const deleteStatements = [
     `DROP TABLE RACE CASCADE CONSTRAINTS`,
     `DROP TABLE DRIVER CASCADE CONSTRAINTS`,
     `DROP TABLE TEAM CASCADE CONSTRAINTS`,
-    `DROP TABLE SCORE CASCADE CONSTRAINTS`,
     `DROP TABLE RACE_SESSION CASCADE CONSTRAINTS`,
-    `DROP TABLE CATEGORY CASCADE CONSTRAINTS`,
-    `DROP TABLE APP_USER CASCADE CONSTRAINTS`,
     `DROP TABLE TESTING CASCADE CONSTRAINTS`, 
     `DROP TABLE SPRINT_RESULT CASCADE CONSTRAINTS`,
     `DROP TABLE QUALI_RESULT CASCADE CONSTRAINTS`,
@@ -308,7 +302,11 @@ const demoInsertStatements = [
     `INSERT INTO SPRINT_RESULT (type, position, totaltime, season, trackname, driverid, teamid) VALUES ('Sprint', 2, TO_DSINTERVAL('0 00:36:10'), 2026, 'Monaco', 'd02', 't02')`
 ];
 const testsql = [
-    `SELECT * FROM APP_USER`
+    `SELECT SUM(POSITION) AS TOTAL_POSITION
+           FROM DRIVER d
+           JOIN RACE_RESULT rr ON d.driverid = rr.driverid
+           WHERE d.driverid = 'ocon'
+           FETCH FIRST 2 ROWS ONLY`
 ];
 
 module.exports = {

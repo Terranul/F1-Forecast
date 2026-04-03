@@ -2,6 +2,13 @@ document.addEventListener("DOMContentLoaded", getUserInformation)
 document.addEventListener("DOMContentLoaded", populateUserPage);
 document.addEventListener("DOMContentLoaded", getSessionInformation);
 document.addEventListener("DOMContentLoaded", getRaceOddsInfo)
+document.addEventListener("DOMContentLoaded", getTeamOddsInfo)
+document.addEventListener("DOMContentLoaded", getPodiumOddsInfo)
+
+/*
+    For some reason I stupidly put all of the methods here, which means that some id's won't exist until you click into a specific page on the 
+    dashboard. It will give an error on the frontend, but it is no issue.
+*/
 
 async function getUserInformation() {
     const userid = localStorage.getItem("userid");
@@ -69,7 +76,87 @@ function getOddsDiv(odd) {
     description.textContent = odd.driverid;
     const odds = document.createElement("p");
     odds.textContent = odd.odd;
+    const button = document.createElement("button");
+    button.textContent = "Make Prediction"
+    // TODO: add event listener on button that will put the prediction into db when clicked (use prediciton endpoint ben)
     div.appendChild(description);
     div.appendChild(odds);
+    div.appendChild(button);
+    return div;
+}
+ 
+async function getTeamOddsInfo() {
+    const session = JSON.parse(localStorage.getItem("session"));
+    const result = await fetch(`/category/teamraceodds/odds`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            season: session.SEASON
+        })
+    });
+    const data = await result.json();
+    const list = document.getElementById("teamodds-data");
+    list.innerHTML = "";
+    document.getElementById("teamodds-desc").textContent = data.description
+    for (const odd of data.odds) {
+        const li = document.createElement("li");
+        li.appendChild(getTeamOddsDiv(odd));
+        list.appendChild(li);
+    }
+}
+
+function getTeamOddsDiv(odd) {
+    const div = document.createElement("div");
+    const description = document.createElement("p");
+    description.textContent = odd.teamName;
+    const odds = document.createElement("p");
+    console.log("odds" + odd.odd)
+    odds.textContent = odd.odds;
+    const button = document.createElement("button");
+    button.textContent = "Make Prediction"
+    // TODO: add event listener on button that will put the prediction into db when clicked
+    div.appendChild(description);
+    div.appendChild(odds);
+    div.appendChild(button);
+    return div;
+}
+
+async function getPodiumOddsInfo() {
+    const session = JSON.parse(localStorage.getItem("session"));
+    const result = await fetch(`/category/podiumodds/odds`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            season: session.SEASON
+        })
+    });
+    const data = await result.json();
+    const list = document.getElementById("podiumodds-data");
+    list.innerHTML = "";
+    document.getElementById("podiumodds-desc").textContent = data.description
+    for (const odd of data.odds) {
+        const li = document.createElement("li");
+        li.appendChild(getPodiumOddsDiv(odd));
+        list.appendChild(li);
+    }
+}
+
+function getPodiumOddsDiv(odd) {
+    const div = document.createElement("div");
+    const description = document.createElement("p");
+    description.textContent = odd.name;
+    const odds = document.createElement("p");
+    console.log("odds" + odd.odd)
+    odds.textContent = odd.odds;
+    const button = document.createElement("button");
+    button.textContent = "Make Prediction"
+    // TODO: add event listener on button that will put the prediction into db when clicked
+    div.appendChild(description);
+    div.appendChild(odds);
+    div.appendChild(button);
     return div;
 }
