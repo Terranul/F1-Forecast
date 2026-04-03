@@ -135,14 +135,18 @@ async function insertDemoData() {
 // value: object mapping each attribute: {id: "id", name: "name"}
 async function insertToTable(tableName, value) {
     console.log(value);
-    const insertStatement = extractInsertStatement(tableName, value)
-        return await withOracleDB(async (connection) => {
-            await connection.execute(
-                insertStatement,
-                value,
-                { autoCommit: true }
-            )
-        });
+    try {
+        const insertStatement = extractInsertStatement(tableName, value)
+            return await withOracleDB(async (connection) => {
+                await connection.execute(
+                    insertStatement,
+                    value,
+                    { autoCommit: true }
+                )
+            });
+    } catch (error) {
+        console.log(error)
+    }
 }
 
 function extractInsertStatement(tableName, value) {
