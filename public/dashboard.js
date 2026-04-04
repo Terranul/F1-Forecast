@@ -1,5 +1,4 @@
 document.addEventListener("DOMContentLoaded", getUserInformation)
-document.addEventListener("DOMContentLoaded", populateUserPage);
 document.addEventListener("DOMContentLoaded", getSessionInformation);
 document.addEventListener("DOMContentLoaded", getRaceOddsInfo)
 document.addEventListener("DOMContentLoaded", getTeamOddsInfo)
@@ -23,18 +22,6 @@ async function getUserInformation() {
     const data = await result.json();
     console.log(data);
     localStorage.setItem("user", JSON.stringify(data));
-}
-
-function populateUserPage() {
-    const user = JSON.parse(localStorage.getItem("user"));
-    const value = document.getElementById("welcome-message");
-    const points = document.getElementById("user-points");
-    const ranking = document.getElementById("user-ranking");
-    const streak = document.getElementById("user-streak");
-    value.textContent = user.USER_NAME
-    points.textContent = "Current Points: " + user.AMOUNT
-    ranking.textContent = "Current Ranking: " + user.RANKING
-    streak.textContent = "Current streak: " + user.STREAK 
 }
 
 async function getSessionInformation() {
@@ -200,6 +187,12 @@ function populateFriendsPage() {
         const streak = document.createElement("p");
         streak.textContent = "Streak: " + friend.STREAK;
 
+        const removeFriend = document.createElement("button");
+        removeFriend.textContent = "Remove Friend"
+        removeFriend.addEventListener(async () => {
+            await removeFriend(localStorage.getItem("userid"),  name)
+        })
+
         div.appendChild(name);
         div.appendChild(points);
         div.appendChild(ranking);
@@ -214,3 +207,16 @@ function populateFriendsPage() {
     }
 }
 
+async function removeFriend(user1id, user2id) {
+    const result = await fetch(`/users/${user1id}/friends/${user2id}`, {
+        method: "DEL",
+        headers: {
+            "Content-Type": "application/json"
+        }
+    });
+    if (result.status === 500) {
+        alert("unable to remove friend")
+    } else {
+        location.reload()
+    }
+}
