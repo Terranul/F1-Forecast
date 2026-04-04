@@ -50,6 +50,38 @@ async function getPredictions(req, res) {
     }
 
 }
+// user can delete prediction before race DELETE
+
+// async function deletePrediction(req, res) {
+//     const app_userid = req.params.user;
+//     const sql = `DELETE
+//                  FROM PREDICTION
+//                  WHERE APP_USERID='${app_userid}!userid' AND TRACKname =  // find a way to know when the next race is.`
+//     try {
+//         const removedPredictions = await appService.executeSql(sql);
+//         res.status(200).json(removedPredictions.rows)
+//     } catch {
+//         res.status(500).json({error: "internal server error"})
+//     }
+
+
+
+
+
+// async function updatePrediction(req, res) {
+//     const app_userid = req.params.user;
+//     const sql = `UPDATE  PREDICTION
+//                  SET  prediction_value = string,
+//                  WHERE APP_USERID='${app_userid}!userid' 
+// before allowing , will ask whether can update. 
+//     try {
+//         const removedPredictions = await appService.executeSql(sql);
+//         res.status(200).json(removedPredictions.rows)
+//     } catch {
+//         res.status(500).json({error: "internal server error"})
+//     }
+
+
 
 module.exports = {
     getPredictions,

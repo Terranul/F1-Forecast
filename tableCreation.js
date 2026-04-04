@@ -212,11 +212,11 @@ const deleteStatements = [
 
 const demoInsertStatements = [
     // APP_USER
-    `INSERT INTO APP_USER (app_userid, dateoffirstprediction, user_name, streak) VALUES ('u01', DATE '2026-01-01', 'Alice', 5)`,
-    `INSERT INTO APP_USER (app_userid, dateoffirstprediction, user_name, streak) VALUES ('u02', DATE '2026-01-02', 'Bob', 3)`,
-    `INSERT INTO APP_USER (app_userid, dateoffirstprediction, user_name, streak) VALUES ('u03', DATE '2026-01-03', 'Charlie', 2)`,
-    `INSERT INTO APP_USER (app_userid, dateoffirstprediction, user_name, streak) VALUES ('u04', DATE '2026-01-04', 'Diana', 4)`,
-    `INSERT INTO APP_USER (app_userid, dateoffirstprediction, user_name, streak) VALUES ('u05', DATE '2026-01-05', 'Edward', 1)`,
+    `INSERT INTO APP_USER (app_userid, dateoffirstprediction, user_name, streak, password, acc) VALUES ('u01', DATE '2026-01-01', 'Alice', 5, 5555, u01)`,
+    `INSERT INTO APP_USER (app_userid, dateoffirstprediction, user_name, streak, password, acc) VALUES ('u02', DATE '2026-01-02', 'Bob', 3, 3333 , u02)`,
+    `INSERT INTO APP_USER (app_userid, dateoffirstprediction, user_name, streak, password, acc) VALUES ('u03', DATE '2026-01-03', 'Charlie', 2, 2222 , u03)`,
+    `INSERT INTO APP_USER (app_userid, dateoffirstprediction, user_name, streak, password, acc) VALUES ('u04', DATE '2026-01-04', 'Diana', 4, 4444 , u04)`,
+    `INSERT INTO APP_USER (app_userid, dateoffirstprediction, user_name, streak, password, acc) VALUES ('u05', DATE '2026-01-05', 'Edward', 1,  1111 , u05)`,
 
     // RACE_SESSION
     `INSERT INTO RACE_SESSION (season, trackname, sessiondate) VALUES (2026, 'Silverstone', DATE '2026-03-01')`,

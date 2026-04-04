@@ -34,7 +34,7 @@ router.post("/initiate-demotable", async (req, res) => {
    //const initiateResult = await appService.initiateDemotable();
     //console.log('finished inserting demotables')
     if (true) {
-       //await appService.insertDemoData()
+       await appService.insertDemoData()
         //now test the db by inserting data after the fact
         try {
     //         await f1apiService.loadAllData(2026);
@@ -97,10 +97,12 @@ router.get('/users', userController.getUsers)
 router.get('/users/:user', userController.getUser)
 router.put('/users/:user', userController.putUser)
 router.get('/users/:user/friends', userController.getUserFriends)
+router.get('/users/:user/friends/:friend', userController.getUserFriends)
 router.put('/users/:user/friends/:friend', userController.putFriend)
 
 router.get('/users/:user/predictions', predictionController.getPredictions)
 router.put('/users/:user/predictions/:prediction', predictionController.putPrediction)
+//router.delete('/users/:user/predictions/:prediction', predictionController.deletePrediction)
 router.get('/users/:user/predictions/:prediction/validate')
 
 router.post('/users/:user/login', userController.loginUser)
@@ -113,3 +115,9 @@ router.get('/sessions/current', sessionController.getCurrentSession)
 
 //TODO : add frIEND TO FRONTEND ;)
 module.exports = router;
+
+// router.get('/users', userController.getUsers)
+// router.get('/users/:user', userController.getUser)
+// router.put('/users/:user', userController.putUser)
+// router.get('/users/:user/friends', userController.getUserFriends)
+// router.put('/users/:user/friends/:friend', userController.putFriend)

@@ -16,7 +16,7 @@ async function getValidateTopTeam(req, res) {
         const validationResult = await validation.validateTopTeam(predictionid);
         res.status(200).json(validationResult)
     } catch(err) {
-        res.status(500).json({blame: "Internal server error :(", error_msg: error.message})
+        res.status(500).json({blame: "Internal server error :(", error_msg: err.message})
     }
 }
 

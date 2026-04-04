@@ -4,6 +4,8 @@ document.addEventListener("DOMContentLoaded", getSessionInformation);
 document.addEventListener("DOMContentLoaded", getRaceOddsInfo)
 document.addEventListener("DOMContentLoaded", getTeamOddsInfo)
 document.addEventListener("DOMContentLoaded", getPodiumOddsInfo)
+document.addEventListener("DOMContentLoaded", getfriendInformation);
+
 
 /*
     For some reason I stupidly put all of the methods here, which means that some id's won't exist until you click into a specific page on the 
@@ -160,3 +162,55 @@ function getPodiumOddsDiv(odd) {
     div.appendChild(button);
     return div;
 }
+
+async function getfriendInformation() {
+    const userid = localStorage.getItem("userid");
+    const result = await fetch(`/users/${userid}/friends`, {
+        method: "GET",
+        headers: {
+            "Content-Type": "application/json"
+        }
+    });
+    const data = await result.json();
+    console.log(data);
+    localStorage.setItem("Friends", JSON.stringify(data));
+    populateFriendsPage();
+}
+
+function populateFriendsPage() {
+    const friends = JSON.parse(localStorage.getItem("Friends"));
+    const list = document.getElementById("friends-list");
+
+    list.innerHTML = ""; 
+
+    for (const friend of friends) {
+        const li = document.createElement("li");
+
+        const div = document.createElement("div");
+
+        const name = document.createElement("p");
+        name.textContent = friend.USER_NAME;
+
+        const points = document.createElement("p");
+        points.textContent = "Points: " + friend.AMOUNT;
+
+        const ranking = document.createElement("p");
+        ranking.textContent = "Ranking: " + friend.RANKING;
+
+        const streak = document.createElement("p");
+        streak.textContent = "Streak: " + friend.STREAK;
+
+        div.appendChild(name);
+        div.appendChild(points);
+        div.appendChild(ranking);
+        div.appendChild(streak);
+
+        li.appendChild(div);
+        list.appendChild(li);
+    }
+    if (!friends || friends.length === 0) {
+        list.innerHTML = "<p>No friends found.</p>";
+        return;
+    }
+}
+

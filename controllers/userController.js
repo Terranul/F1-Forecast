@@ -28,7 +28,7 @@ async function putUser(req, res) {
             acc: acc,
             password: password
         })
-        res.status(200).json({message: "No one's going to be reading this, but well done, you just created a user!"})
+        res.status(200).json({message: "No one's going to be reading this, but well done, you just created a user!"}) // Yaaaaaaayyyy Benfaaar did it!!!!!!
     } catch (err) {
         console.log("Issue creating user: " + user_name)
         res.status(422).json({error: `username: ${user_name} already exists`})
@@ -49,7 +49,7 @@ async function getUserFriends(req, res) {
     const user_name = req.params.user;
     const sql = `SELECT * 
                  FROM FRIEND f
-                 JOIN APP_USER a ON f.USER2ID = a.APP_USERID
+                 JOIN APP_USER a ON f.USER1ID = a.APP_USERID
                  WHERE f.USER1ID='${user_name + "!userid"}'`
     try {
         const friends = await appService.executeSql(sql);
@@ -95,11 +95,16 @@ async function loginUser(req, res) {
     const user = await appService.executeSql(`SELECT * FROM APP_USER WHERE USER_NAME='${req.params.user}'`)
     console.log(JSON.stringify(user))
     console.log(user.rows[0].PASSWORD)
-    if (user.rows[0].PASSWORD == req.body.password) {
-        res.status(200).send();
-    } else {
-        res.status(404).send();
+    if (!user.rows || user.rows.length === 0) {
+        return res.status(404).send("User not found");
     }
+    else if (user.rows[0].PASSWORD == req.body.password) {
+        res.status(200).send();
+    
+    } else {
+        return res.status(422).send("User or password is not correct...");
+    }
+
 }
 
 async function updateUserScores(req, res) {
@@ -113,6 +118,7 @@ async function updateUserScores(req, res) {
     }
     res.status(204).send()
 }
+
 
 module.exports = {
     putFriend,
