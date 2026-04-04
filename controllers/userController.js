@@ -73,6 +73,11 @@ async function putFriend(req, res) {
             user1id: username + "!userid",
             user2id: friendUsername + "!userid"
         })
+        // create another to represent the inverse relationship
+        await appService.insertToTable("FRIEND", {
+            user2id: username + "!userid",
+            user1id: friendUsername + "!userid"
+        })
         res.status(202).json({user1id: username, user2id: friendUsername})
     } catch (err) {
         res.status(500).json({ error: "internal server error" })
@@ -119,6 +124,65 @@ async function updateUserScores(req, res) {
     res.status(204).send()
 }
 
+async function getUserArbitrary(req, res) {
+    console.log("entered use arb")
+    const restriction = req.params.restriction;
+    const sql = `SELECT *
+                 FROM APP_USER NATURAL JOIN SCORE
+                 WHERE ${restriction}`
+    const result = await appService.executeSql(sql);
+    console.log(JSON.stringify(result))
+    res.status(200).json(result.rows);
+}
+
+// at this point I don't care about making this look presentable
+async function updateProfile(req, res) {
+    console.log("entered update profile")
+    const values = req.body;
+    console.log(JSON.stringify(values))
+    for (const key of Object.keys(values)) {
+        const value = Number(values[key]);
+        let sql = ""
+        if (!isNaN(value)) {
+            if (key == "amount") {
+                await updateUserAmount(req.params.user, value)
+                res.status(204).send();
+                return;
+            } else if (key == "user_name") {
+                sql = `UPDATE APP_USER
+                       SET ${key} = '${value}'
+                       WHERE USER_NAME='${req.params.user}'`
+            } else if (key === "acc") {
+                sql = `UPDATE APP_USER
+                       SET ${key} = ${value}
+                       WHERE USER_NAME='${req.params.user}'`
+            }
+        } else {
+            sql = `UPDATE APP_USER
+                  SET ${key} = '${values[key]}'
+                  WHERE USER_NAME='${req.params.user}'`
+        }
+        const result = await appService.executeSql(sql);  
+        if (result === null) {
+            res.status(404).send();
+            return;
+        }
+    }
+    res.status(204).send();
+}
+
+async function updateUserAmount(username, amount) {
+    const sql =  `SELECT ACC
+                  FROM APP_USER
+                  WHERE USER_NAME='${username}'`
+    const result = await appService.executeSql(sql);
+    const acc = result.rows[0].ACC;
+    const asql =  `UPDATE SCORE
+            SET AMOUNT = ${amount}
+            WHERE ACC='${acc}'`
+    await appService.executeSql(asql);  
+}
+
 
 module.exports = {
     putFriend,
@@ -127,5 +191,7 @@ module.exports = {
     getUserFriends,
     getUsers,
     loginUser,
-    updateUserScores
+    updateUserScores,
+    getUserArbitrary,
+    updateProfile
 }

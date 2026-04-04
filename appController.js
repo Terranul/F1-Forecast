@@ -113,6 +113,10 @@ router.put('/users/:user/score', userController.updateUserScores)
 router.post('/category/:categoryid/odds', oddsController.getOdds)
 router.get('/sessions/current', sessionController.getCurrentSession)
 
+router.get('/users/search/:restriction', userController.getUserArbitrary);
+
+router.post('/users/:user/update', userController.updateProfile)
+
 //TODO : add frIEND TO FRONTEND ;)
 module.exports = router;
 

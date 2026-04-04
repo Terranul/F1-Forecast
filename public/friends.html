@@ -14,13 +14,48 @@
 </head>
 
 <body>
-    <div  class="friends-container"  
-        <h2> Friends Leaderboard </h2>
+    <div class="friends-container" <h2> Friends Leaderboard </h2>
         <ul id="friends-list" </ul>
-    </div> 
-    
-    
+    </div>
+
+    <button id="and-button">And</button>
+    <button id="or-button">Or</button>
+    <div id="query-options">
+        <label>
+            <input type="radio" name="mode" value="streak" id="streak-radio">
+            Streak
+        </label>
+
+        <label>
+            <input type="radio" name="mode" value="amount" id="amount-radio">
+            Amount
+        </label>
+
+        <label>
+            <input type="radio" name="mode" value="user_name" id="username-radio">
+            Username
+        </label>
+        <label>
+            Enter username if you selected username
+            <input type="text" id="username-input">
+        </label>
+        <label>
+            Enter number value if you selected amount or streak
+            <input type="number" id="number-input">
+        </label>
+    </div>
+    <div id="query-formation"></div>
+    <button id="send-query">Submit</button>
+    <button id="clear-query">Clear</button>
+
+    <div id="user-info-container">
+
+    </div>
+
+
+
     <script src="dashboard.js"></script>
+    <script src="friends.js"></script>
 </body>
 
 </html>

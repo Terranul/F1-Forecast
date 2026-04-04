@@ -14,7 +14,6 @@
 </head>
 
 <body>
-
     <h1 id="welcome-message"></h1>
 
     <div id="information-container">
@@ -29,9 +28,24 @@
         <button id="submit-points">Submit</button>
     </div>
 
+    <div id="edit-container">
+        <h3>Edit your profile</h1>
+        <label>
+            Acc:
+            <input type="text" id="acc-input">
+        </label>
+        <label>
+            Score (editing your score will manually increase your balance):
+            <input type="number" id="score-input">
+        </label>
+    </div>
+    <button id="edit-user">Submit</button>
+    <p id="edit-error"></p>
+
    
 
     <script src="dashboard.js"></script>
+    <script src="user-profile.js"></script>
 </body>
 
 </html>

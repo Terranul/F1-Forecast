@@ -71,7 +71,7 @@ async function validateTopTeam(predictionid) {
 
 // TODO: this one is a bit challenging 
 async function validateCircuitTimes(predictionid) {
-
+    
 }
 
 async function validatePodiumDrive(predictionid) {
