@@ -176,7 +176,8 @@ function populateFriendsPage() {
         const div = document.createElement("div");
 
         const name = document.createElement("p");
-        name.textContent = friend.USER_NAME;
+        const friendUsername = friend.USER2ID.slice(0, -7);
+        name.textContent = friendUsername
 
         const points = document.createElement("p");
         points.textContent = "Points: " + friend.AMOUNT;
@@ -189,10 +190,11 @@ function populateFriendsPage() {
 
         const removeFriend = document.createElement("button");
         removeFriend.textContent = "Remove Friend"
-        removeFriend.addEventListener(async () => {
-            await removeFriend(localStorage.getItem("userid"),  name)
+        removeFriend.addEventListener("click", async () => {
+            await rmFriend(localStorage.getItem("userid"),  friendUsername)
         })
 
+        div.appendChild(removeFriend);
         div.appendChild(name);
         div.appendChild(points);
         div.appendChild(ranking);
@@ -207,9 +209,9 @@ function populateFriendsPage() {
     }
 }
 
-async function removeFriend(user1id, user2id) {
+async function rmFriend(user1id, user2id) {
     const result = await fetch(`/users/${user1id}/friends/${user2id}`, {
-        method: "DEL",
+        method: "DELETE",
         headers: {
             "Content-Type": "application/json"
         }

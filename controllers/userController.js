@@ -52,8 +52,9 @@ async function uploadDefaultScore(acc) {
 async function getUserFriends(req, res) {
     const user_name = req.params.user;
     const sql = `SELECT * 
-                 FROM FRIEND f
+                 FROM FRIEND f 
                  JOIN APP_USER a ON f.USER1ID = a.APP_USERID
+                 NATURAL JOIN SCORE
                  WHERE f.USER1ID='${user_name + "!userid"}'`
     try {
         const friends = await appService.executeSql(sql);
@@ -191,9 +192,9 @@ async function removeFriend(req, res) {
     const user1id = req.params.user
     const user2id = req.params.friend;
     const sql = `DELETE FROM FRIEND
-                 WHERE USER1ID='${user1id} AND USER2ID='${user2id}''`
+                 WHERE USER1ID='${user1id}!userid' AND USER2ID='${user2id}!userid'`
     const result = await appService.executeSql(sql);
-    if (result = null) {
+    if (result === null) {
         res.status(500).send();
         return;
     }
