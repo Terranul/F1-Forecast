@@ -190,7 +190,7 @@ function populateFriendsPage() {
         const removeFriend = document.createElement("button");
         removeFriend.textContent = "Remove Friend"
         removeFriend.addEventListener(async () => {
-            await removeFriend()
+            await removeFriend(localStorage.getItem("userid"),  name)
         })
 
         div.appendChild(name);
@@ -207,6 +207,16 @@ function populateFriendsPage() {
     }
 }
 
-async function removeFriend(user1id) {
-
+async function removeFriend(user1id, user2id) {
+    const result = await fetch(`/users/${user1id}/friends/${user2id}`, {
+        method: "DEL",
+        headers: {
+            "Content-Type": "application/json"
+        }
+    });
+    if (result.status === 500) {
+        alert("unable to remove friend")
+    } else {
+        location.reload()
+    }
 }

@@ -20,7 +20,7 @@ async function putUser(req, res) {
     try {
         // since the app_userid is the primary key, if a duplicate username will occur, the insertToTable will throw and we catch it here
         await uploadDefaultScore(acc)
-        await appService.insertToTable("APP_USER", {
+        const result = await appService.insertToTable("APP_USER", {
             user_name: user_name,
             app_userid: app_userid,
             dateoffirstprediction: dateoffirstprediction,
@@ -28,6 +28,10 @@ async function putUser(req, res) {
             acc: acc,
             password: password
         })
+        if (result === null) {
+            res.status(422).json({error: `username: ${user_name} already exists`})
+            return;
+        }
         res.status(200).json({message: "No one's going to be reading this, but well done, you just created a user!"}) // Yaaaaaaayyyy Benfaaar did it!!!!!!
     } catch (err) {
         console.log("Issue creating user: " + user_name)
@@ -183,6 +187,19 @@ async function updateUserAmount(username, amount) {
     await appService.executeSql(asql);  
 }
 
+async function removeFriend(req, res) {
+    const user1id = req.params.user
+    const user2id = req.params.friend;
+    const sql = `DELETE FROM FRIEND
+                 WHERE USER1ID='${user1id} AND USER2ID='${user2id}''`
+    const result = await appService.executeSql(sql);
+    if (result = null) {
+        res.status(500).send();
+        return;
+    }
+    res.status(200).send();
+}
+
 
 module.exports = {
     putFriend,
@@ -193,5 +210,6 @@ module.exports = {
     loginUser,
     updateUserScores,
     getUserArbitrary,
-    updateProfile
+    updateProfile,
+    removeFriend
 }

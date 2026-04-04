@@ -146,6 +146,7 @@ async function insertToTable(tableName, value) {
             });
     } catch (error) {
         console.log(error)
+        return null
     }
 }
 

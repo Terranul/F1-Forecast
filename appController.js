@@ -117,6 +117,8 @@ router.get('/users/search/:restriction', userController.getUserArbitrary);
 
 router.post('/users/:user/update', userController.updateProfile)
 
+router.delete("/users/:user/friends/:friend", userController.removeFriend)
+
 //TODO : add frIEND TO FRONTEND ;)
 module.exports = router;
 
