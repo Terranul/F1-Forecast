@@ -17,6 +17,38 @@ async function getCurrentSession(req, res) {
     
 }
 
+async function averagePointsPerNationality(req, res) {
+    const sql = `SELECT nationality,
+                 AVG(accumulatedpoints) AS avg_points   
+                 FROM DRIVER
+                 GROUP BY nationality`
+    const result = await appService.executeSql(sql);
+    if (result !== null) {
+        res.status(200).json(result.rows);
+    } else {
+        res.status(404).send();
+    }
+}
+
+async function averagePositionPerTeamPerSession(req, res) {
+    const sql = `SELECT teamid, season, AVG(avg_position) AS avg_finish_position
+                FROM (
+                    SELECT teamid, season, trackname, AVG(position) AS avg_position
+                    FROM RACE_RESULT
+                    GROUP BY teamid, season, trackname
+                    )
+                GROUP BY teamid, season
+                ORDER BY season, avg_finish_position`
+    const result = await appService.executeSql(sql);
+    if (result !== null) {
+        res.status(200).json(result.rows);
+    } else {
+        res.status(404).send();
+    }
+}
+
 module.exports = {
-    getCurrentSession
+    getCurrentSession,
+    averagePointsPerNationality,
+    averagePositionPerTeamPerSession
 }

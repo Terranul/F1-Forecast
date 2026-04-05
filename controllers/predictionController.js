@@ -8,10 +8,8 @@ const appService = require('../appService');
         driverid: string,
         season: number,
         trackname: string,
-        date_filed: string in YYYY-MM-DD form
         prediction_value: string,
         odds_value: number,
-        time_filed: string in HH:MM:SS form
     }
 */
 async function putPrediction(req, res) {
