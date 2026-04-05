@@ -47,8 +47,24 @@ async function averagePositionPerTeamPerSession(req, res) {
     }
 }
 
+async function top15EveryTrack(req, res) {
+    const sql = `SELECT driverid
+                FROM RACE_RESULT r1
+                WHERE position <= 40
+                GROUP BY driverid
+                HAVING COUNT(DISTINCT trackname) =
+                    (SELECT COUNT(DISTINCT trackname) FROM RACE_SESSION WHERE SEASON=2026)`
+    const result = await appService.executeSql(sql);
+    if (result !== null) {
+        res.status(200).json(result.rows);
+    } else {
+        res.status(404).send();
+    }
+}
+
 module.exports = {
     getCurrentSession,
     averagePointsPerNationality,
-    averagePositionPerTeamPerSession
+    averagePositionPerTeamPerSession,
+    top15EveryTrack
 }

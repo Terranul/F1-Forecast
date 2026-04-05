@@ -1,5 +1,5 @@
 const express = require('express');
-const appService = require('../App/appService');
+const appService = require('../appService');
 
 /*
     Format for req body:
