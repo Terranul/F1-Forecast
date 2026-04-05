@@ -1,5 +1,5 @@
 const express = require('express');
-const appService = require('../appService');
+const appService = require('../App/appService');
 
 /*
     Format for req body:
@@ -14,14 +14,8 @@ const appService = require('../appService');
 */
 async function putPrediction(req, res) {
     const values = req.body;
-    const now = new Date()
-    // the req.body already has everything except the prediction id
-    values.predictionid = req.params.prediction;
-    values.app_userid = req.params.user + "!userid";
-    values.time_filed = now;
-    values.date_filed = now;
-    // quick check to make sure there are no missing fields
-    if (Object.keys(values).length !== 10) {
+     values.app_userid = req.params.user + "!userid";
+     if (Object.keys(values).length !== 10) {
         res.status(422).json({error: "missing a required field"});
         return;
     }
@@ -36,52 +30,106 @@ async function putPrediction(req, res) {
 }
 
 async function getPredictions(req, res) {
-    const app_userid = req.params.user;
+    const app_userid = req.params.user  + "!userid" ;
     const sql = `SELECT *
-                 FROM APP_USER NATURAL JOIN PREDICTION
-                 WHERE APP_USERID='${app_userid}!userid'`
-    try {
-        const userPredictions = await appService.executeSql(sql);
+                 FROM APP_USER a 
+                JOIN PREDICTION p
+                ON a.app_userid = p.app_userid
+                WHERE APP_USERID= :app_userid`;
+
+try { 
+        const userPredictions = await appService.executeSqlBinding(sql, {app_userid: app_userid});
         res.status(200).json(userPredictions.rows)
     } catch {
         res.status(500).json({error: "internal server error"})
     }
 
 }
-// user can delete prediction before race DELETE
 
-// async function deletePrediction(req, res) {
-//     const app_userid = req.params.user;
-//     const sql = `DELETE
-//                  FROM PREDICTION
-//                  WHERE APP_USERID='${app_userid}!userid' AND TRACKname =  // find a way to know when the next race is.`
-//     try {
-//         const removedPredictions = await appService.executeSql(sql);
-//         res.status(200).json(removedPredictions.rows)
-//     } catch {
-//         res.status(500).json({error: "internal server error"})
-//     }
+async function deletePrediction(req, res) {
+    const app_userid = req.params.user  + "!userid";
+    const predictionid = req.params.prediction;
+    const currentDate = new Date()
+    const sql = `
+        DELETE FROM PREDICTION
+        WHERE app_userid = :appid
+        AND predictionid = :predictionid
+        AND (p.season, p.trackname) IN (
+        SELECT season, trackname
+        FROM RACE_SESSION
+        WHERE sessiondate > :currentDate
+    )
+`;
+    
+
+    try {
+        const result = await appService.executeSqlBinding(sql, {
+            app_userid: app_userid,
+            predictionid: predictionid,
+            currentDate: currentDate
+        });
+
+        res.status(200).json({ success: true });
+    } catch (err) {
+        console.log(err);
+        res.status(500).json({ error: "internal server error" });
+    }
+}
 
 
 
 
+async function updatePrediction(req, res) {
+    const app_userid = req.params.user  + "!userid";
+    const predictionid = req.params.prediction;
+    const { prediction_value } = req.body;
+    const currentDate = new Date()
+    const sql = `
+       UPDATE PREDICTION
+        SET prediction_value = :value
+        WHERE app_userid = :appid
+        AND predictionid = :predictionid
+        AND (p.season, p.trackname) IN (
+        SELECT season, trackname
+        FROM RACE_SESSION
+        WHERE sessiondate > :currentDate
+    )
+`;
+    
 
-// async function updatePrediction(req, res) {
-//     const app_userid = req.params.user;
-//     const sql = `UPDATE  PREDICTION
-//                  SET  prediction_value = string,
-//                  WHERE APP_USERID='${app_userid}!userid' 
-// before allowing , will ask whether can update. 
-//     try {
-//         const removedPredictions = await appService.executeSql(sql);
-//         res.status(200).json(removedPredictions.rows)
-//     } catch {
-//         res.status(500).json({error: "internal server error"})
-//     }
+    try {
+        const result = await appService.executeSqlBinding(sql, {
+           value: prediction_value,
+            app_userid: app_userid,
+            predictionid: predictionid,
+            currentDate: currentDate
+        });
 
+        res.status(200).json({ success: true });
+    } catch (err) {
+        console.log(err);
+        res.status(500).json({ error: "internal server error" });
+    }
+}
 
+async function getPerfectPredictors(req, res) {
+    try {
+        const users = await validation.getPerfectPredictors();
 
+        res.status(200).json({
+            count: users.length,
+            users: users
+        });
+
+    } catch (err) {
+        console.log("Error fetching perfect predictors:", err);
+        res.status(500).json({ error: "internal server error" });
+    }
+}
 module.exports = {
     getPredictions,
-    putPrediction
+    putPrediction,
+    deletePrediction,
+    updatePrediction,
+    getPerfectPredictors
 }
