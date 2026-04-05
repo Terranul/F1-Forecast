@@ -119,6 +119,10 @@ router.post('/users/:user/update', userController.updateProfile)
 
 router.delete("/users/:user/friends/:friend", userController.removeFriend)
 
+router.get("/avg", sessionController.averagePointsPerNationality)
+
+router.get("/avgteam", sessionController.averagePositionPerTeamPerSession)
+
 //TODO : add frIEND TO FRONTEND ;)
 module.exports = router;
 

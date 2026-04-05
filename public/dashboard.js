@@ -4,6 +4,8 @@ document.addEventListener("DOMContentLoaded", getRaceOddsInfo)
 document.addEventListener("DOMContentLoaded", getTeamOddsInfo)
 document.addEventListener("DOMContentLoaded", getPodiumOddsInfo)
 document.addEventListener("DOMContentLoaded", getfriendInformation);
+document.addEventListener("DOMContentLoaded", populateAvgNationality)
+document.addEventListener("DOMContentLoaded", populateAvgTeam)
 
 
 /*
@@ -217,8 +219,82 @@ async function rmFriend(user1id, user2id) {
         }
     });
     if (result.status === 500) {
-        alert("unable to remove friend")
+        alert("unable to remove friend: this tuple you are referencing does not exist")
     } else {
+        alert("removed friend")
         location.reload()
     }
 }
+
+async function populateAvgNationality() {
+    const result = await fetch(`/avg`, {
+        method: "GET",
+        headers: {
+            "Content-Type": "application/json"
+        }
+    });
+    const data = await result.json();
+    const parent = document.getElementById("avg-container")
+    for (const value of data) {
+        const div = getNatDiv(value);
+        parent.appendChild(div);
+    }
+}
+
+function getNatDiv(value) {
+    const divider = document.createElement("p");
+    divider.textContent = "------------------------------"
+    const div = document.createElement("div");
+    const nat = document.createElement("p");
+    nat.textContent = value.NATIONALITY
+    const avg = document.createElement("p");
+    avg.textContent = "Average Points: " + value.AVG_POINTS;
+    div.appendChild(divider)
+    div.appendChild(nat);
+    div.appendChild(avg);
+    return div;
+}
+
+async function populateAvgTeam() {
+    const result = await fetch(`/avgteam`, {
+        method: "GET",
+        headers: {
+            "Content-Type": "application/json"
+        }
+    });
+
+    const data = await result.json();
+    const parent = document.getElementById("avgteam-container");
+
+    for (const value of data) {
+        const div = getTeamDiv(value);
+        parent.appendChild(div);
+    }
+}
+
+function getTeamDiv(value) {
+    const div = document.createElement("div");
+
+    const divider = document.createElement("p");
+    divider.textContent = "------------------------------"
+
+    const team = document.createElement("p");
+    team.textContent = value.TEAMID;
+
+    const season = document.createElement("p");
+    season.textContent = "Season: " + value.SEASON;
+
+    const avg = document.createElement("p");
+    avg.textContent = "Average Finish Position: " + value.AVG_FINISH_POSITION;
+
+    div.appendChild(divider)
+    div.appendChild(team);
+    div.appendChild(avg);
+    div.appendChild(season);
+
+    return div;
+}
+
+
+
+

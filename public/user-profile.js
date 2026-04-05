@@ -6,6 +6,10 @@ async function updateProfile() {
     const user = localStorage.getItem("userid")
     const score = document.getElementById("score-input").value;
     const acc = document.getElementById("acc-input").value;
+    if (score < 0) {
+        document.getElementById("edit-error").innerHTML = "submit a score > 0"
+        return;
+    }
     const body = {};
     if (score) {body.amount = score;}
     if (acc) {body.acc = acc}
@@ -19,6 +23,7 @@ async function updateProfile() {
     if (result.status !== 204) {
         document.getElementById("edit-error").innerHTML = "Invalid acc submitted"
     } else {
+        alert("Profile updated")
         getUserInformation()
         location.reload()
     }

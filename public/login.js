@@ -1,7 +1,7 @@
-document.getElementById("login-button").addEventListener("click", verifyAndLoginUser);
+document.getElementById("login-button").addEventListener("click", loginUser);
+document.getElementById("create-button").addEventListener("click", createAccount);
 
-async function verifyAndLoginUser() {
-    // we will first try to create the user, if it doesn't go through we know they already have an account, so we will login
+async function createAccount() {
     const username = document.getElementById("username").value;
     const password = document.getElementById("password").value;
     const result = await fetch(`/users/${username}`, {
@@ -13,13 +13,21 @@ async function verifyAndLoginUser() {
             password: password
         })
     })
-    if (result.ok) {
+     if (result.ok) {
         // we have created a user
+        alert("You have created an acount (inserted a tuple)")
         localStorage.setItem("userid", username);
         window.location.href = "/dashboard.html";
 
     } else {
-        const result = await fetch(`/users/${username}/login`, {
+        document.getElementById("error-msg").innerText = "Username already taken"
+    }
+}
+
+async function loginUser() {
+    const username = document.getElementById("username").value;
+    const password = document.getElementById("password").value;
+    const result = await fetch(`/users/${username}/login`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
@@ -28,13 +36,11 @@ async function verifyAndLoginUser() {
                 password: password
             })
         })
-        if (result.ok) {
+    if (result.ok) {
             // user has login
             localStorage.setItem("userid", username);
             window.location.href = "/dashboard.html";
         } else {
              document.getElementById("error-msg").innerText = "Invalid password, try again"
         }
-    }
-    
 }
