@@ -1,13 +1,12 @@
 const appService = require('../appService');
+const userService = require('../services/userService')
 
 async function getUser(req, res) {
-    const user = await appService.executeSql(`SELECT *
-                                              FROM APP_USER NATURAL JOIN SCORE
-                                              WHERE USER_NAME='${req.params.user}'`)
+    const user = await userService.getUser(req.params.user, null)
     console.log("getting user")
     console.log(JSON.stringify(user))
-    delete user.rows[0].PASSWORD
-    res.status(200).json(user.rows[0]);
+    delete user.PASSWORD
+    res.status(200).json(user);
 }
 
 async function putUser(req, res) {

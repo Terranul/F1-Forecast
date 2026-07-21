@@ -187,6 +187,28 @@ async function executeSql(statement) {
     }
 }
 
+// tableName is the name of the targeted table
+// mapping is an object containing key value pairs corresponding to each attribute and what you want to update it to
+// qualification is an object containing key value pairs corresponding to the WHERE clause. It must contain the primary key of the table
+// example: tableName = APP_USER
+// mapping = {acc: "test"}
+// qualification = {username: "test123"}
+// result: UPDATE APP_USER SET ACC='test' WHERE USERNAME='test123'
+// idk if this function is actually usefull or just tedious
+async function updateTable(tableName, mapping, qualification) {
+    var sqlResult = `UPDATE ${tableName} SET `
+    for (const key of Object.keys(mapping)) {
+        sqlResult += `${key}='${mapping[key]}',`
+    }
+    sqlResult = sqlResult.slice(0, -1)
+    sqlResult += ' WHERE '
+    for (const key of Object.keys(qualification)) {
+        sqlResult += `${key}='${qualification[key]}',`
+    }
+    sqlResult = sqlResult.slice(0, -1)
+    await executeSql(sqlResult)
+}
+
 async function executeSqlBinding(statement, bindings) {
     try {
         return await withOracleDB(async (connection) => {
@@ -215,5 +237,6 @@ module.exports = {
     insertToTable,
     executeSql,
     testSqlStatements,
-    executeSqlBinding
+    executeSqlBinding,
+    updateTable
 };
