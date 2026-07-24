@@ -299,3 +299,7 @@ VALUES ('teamraceodds', 'Odds for a given team to accumulate the most points in 
 
 INSERT INTO CATEGORY (categoryid, name) 
 VALUES ('podiumodds', 'Odds for a driver with podium finishes this season to finish off the podium');
+
+
+
+CREATE TABLE APP_SESSION (id VARCHAR2(100), app_userid VARCHAR2(50), CONSTRAINT SESSION_PK PRIMARY KEY (id), CONSTRAINT SESSION_FK FOREIGN KEY (app_userid) REFERENCES APP_USER(app_userid) ON DELETE CASCADE)

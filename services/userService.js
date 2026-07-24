@@ -16,7 +16,7 @@ async function getUser(username, password) {
         return user.rows[0]
     }
 }
-
+ 
 // mapping is an object containing key value pairs corresponding to each attribute and what you want to update it to
 async function updateUser(mapping, username) {
     await appService.updateTable("APP_USER", mapping, {"USER_NAME": username})

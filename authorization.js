@@ -1,4 +1,5 @@
 const userService = require('./services/userService')
+const appService = require('./appService')
 
 /*
     session tokens to ensure that only users that are signed in can access specific endpoints
@@ -8,14 +9,15 @@ const userService = require('./services/userService')
     have on the frontend, and the one on the backend is rendered useless. We will only ever override it.
 */
 
+// return true: authorized, return false: invalid session
 async function authorizeUser(username, sessionToken) {
-    const user = await userService.getUser(username, null)
-    return user.ACC == sessionToken 
+    const session = await appService.executeSql(`SELECT * FROM APP_SESSION WHERE app_userid='${username}'`)
+    return session.rows.length != 0 && session.rows.length[0].ID == sessionToken
 }
 
-async function generateSession(username) {
-    const sessionToken = crypto.randomUUID
-    await userService.updateUser({"ACC": sessionToken}, username)
+async function generateSession(userid) {
+    const sessionToken = Date.now().toString() // should be using crypto module, but the ubc remote doesn't allow external dependancies
+    appService.insertToTable("APP_SESSION", {id: sessionToken, app_userid: userid})
     return sessionToken
 }
 

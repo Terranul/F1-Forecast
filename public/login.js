@@ -16,6 +16,7 @@ async function createAccount() {
      if (result.ok) {
         // we have created a user
         alert("You have created an acount (inserted a tuple)")
+        populateSessionCookies(result)
         localStorage.setItem("userid", username);
         window.location.href = "/dashboard.html";
 
@@ -38,9 +39,19 @@ async function loginUser() {
         })
     if (result.ok) {
             // user has login
+            populateSessionCookies(result)
             localStorage.setItem("userid", username);
             window.location.href = "/dashboard.html";
         } else {
              document.getElementById("error-msg").innerText = "Invalid password, try again"
         }
 }
+
+// data is the raw result of calling fetch 
+function populateSessionCookies(data) {
+    let sessionId = data.headers.get("sessionId")
+    let username = data.headers.get("username")
+    const cookieString = `id=${sessionId}; user_name=${username}; Path=/`
+    document.cookie = cookieString
+}
+

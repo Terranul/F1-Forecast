@@ -1,5 +1,6 @@
 const appService = require('../appService');
 const userService = require('../services/userService')
+const sessionService = require('../authorization')
 
 async function getUser(req, res) {
     const user = await userService.getUser(req.params.user, null)
@@ -14,7 +15,7 @@ async function putUser(req, res) {
     const password = req.body.password;
     console.log(user_name + password)
     const dateoffirstprediction = new Date(); // by default will represent the time of the code being executed
-    const app_userid = user_name + "!userid"
+    const app_userid = user_name + "!userid" // bro why did you do this instead of maybe just removing the fucking acc and app_userid from the schema????
     const acc = user_name + "acc"; // only ever used internally, so no reason to make it any different
     try {
         // since the app_userid is the primary key, if a duplicate username will occur, the insertToTable will throw and we catch it here
@@ -31,7 +32,8 @@ async function putUser(req, res) {
             res.status(422).json({error: `username: ${user_name} already exists`})
             return;
         }
-        res.status(200).json({message: "No one's going to be reading this, but well done, you just created a user!"}) // Yaaaaaaayyyy Benfaaar did it!!!!!!
+        const token = sessionService.generateSession(app_userid)
+        res.status(200).json({message: "No one's going to be reading this, but well done, you just created a user!", sessionToken: token})
     } catch (err) {
         console.log("Issue creating user: " + user_name)
         res.status(422).json({error: `username: ${user_name} already exists`})
@@ -101,15 +103,16 @@ async function getUsers(req, res) {
 async function loginUser(req, res) {
     console.log(req.params.user)
     console.log(req.body.password)
-    const user = await appService.executeSql(`SELECT * FROM APP_USER WHERE USER_NAME='${req.params.user}'`)
+    const username = req.params.user
+    const user = await appService.executeSql(`SELECT * FROM APP_USER WHERE USER_NAME='${username}'`)
     console.log(JSON.stringify(user))
     console.log(user.rows[0].PASSWORD)
     if (!user.rows || user.rows.length === 0) {
         return res.status(404).send("User not found");
     }
     else if (user.rows[0].PASSWORD == req.body.password) {
-        res.status(200).send();
-    
+        const token = sessionService.generateSession(username + "!userid")
+        res.status(200).json({sessionToken: token})
     } else {
         return res.status(422).send("User or password is not correct...");
     }
