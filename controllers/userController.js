@@ -32,8 +32,8 @@ async function putUser(req, res) {
             res.status(422).json({error: `username: ${user_name} already exists`})
             return;
         }
-        const token = sessionService.generateSession(app_userid)
-        res.status(200).json({message: "No one's going to be reading this, but well done, you just created a user!", sessionToken: token})
+        const token = await sessionService.generateSession(app_userid)
+        res.status(200).json({message: "No one's going to be reading this, but well done, you just created a user!", sessionToken: token, userId: app_userid})
     } catch (err) {
         console.log("Issue creating user: " + user_name)
         res.status(422).json({error: `username: ${user_name} already exists`})
@@ -111,8 +111,8 @@ async function loginUser(req, res) {
         return res.status(404).send("User not found");
     }
     else if (user.rows[0].PASSWORD == req.body.password) {
-        const token = sessionService.generateSession(username + "!userid")
-        res.status(200).json({sessionToken: token})
+        const token = await sessionService.generateSession(username + "!userid")
+        res.status(200).json({sessionToken: token, userId: username + "!userid"})
     } else {
         return res.status(422).send("User or password is not correct...");
     }

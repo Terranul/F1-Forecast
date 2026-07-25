@@ -1,5 +1,6 @@
 const express = require('express');
 const appController = require('./appController');
+const authMiddleware = require('./middleware/authMiddleware')
 //const cookieParser = require("cookie-parser");
 
 // Load environment variables from .env file
@@ -21,9 +22,10 @@ app.use(express.json());             // Parse incoming JSON payloads
 // app.get('/', (req, res) => {
 //     res.sendFile(__dirname + '/public/DEFAULT_FILE_NAME.html');
 // });
-
+console.log("testing")
 
 // mount the router
+app.use('/', authMiddleware.authenticateSession)
 app.use('/', appController);
 
 // ----------------------------------------------------------

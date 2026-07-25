@@ -14,11 +14,12 @@ async function createAccount() {
         })
     })
      if (result.ok) {
+        console.log("ok result on creating acount")
         // we have created a user
         alert("You have created an acount (inserted a tuple)")
-        populateSessionCookies(result)
+        await populateSessionCookies(result)
         localStorage.setItem("userid", username);
-        window.location.href = "/dashboard.html";
+        //window.location.href = "/dashboard.html";
 
     } else {
         document.getElementById("error-msg").innerText = "Username already taken"
@@ -39,7 +40,7 @@ async function loginUser() {
         })
     if (result.ok) {
             // user has login
-            populateSessionCookies(result)
+            await populateSessionCookies(result)
             localStorage.setItem("userid", username);
             window.location.href = "/dashboard.html";
         } else {
@@ -48,10 +49,12 @@ async function loginUser() {
 }
 
 // data is the raw result of calling fetch 
-function populateSessionCookies(data) {
-    let sessionId = data.headers.get("sessionId")
-    let username = data.headers.get("username")
-    const cookieString = `id=${sessionId}; user_name=${username}; Path=/`
+async function populateSessionCookies(data) {
+    let result = await data.json()
+    let sessionId = result.sessionId
+    let userId = result.userId
+    const cookieString = `id=${sessionId}; user_name=${userId}; Path=/`
+    console.log("cookie string:" + cookieString)
     document.cookie = cookieString
 }
 
