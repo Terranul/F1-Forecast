@@ -6,6 +6,7 @@ const userController = require('./controllers/userController');
 const sessionController = require('./controllers/sessionController');
 const validationController = require('./controllers/validationController');
 const oddsController = require('./controllers/oddsCategoryController')
+const authController = require('./controllers/authController')
 
 const router = express.Router();
 
@@ -124,6 +125,8 @@ router.get("/avg", sessionController.averagePointsPerNationality)
 router.get("/avgteam", sessionController.averagePositionPerTeamPerSession);
 
 router.get("/gooddriver", sessionController.top15EveryTrack);
+
+router.delete("/users/:user/sessions", authController.endSession)
 
 //TODO : add frIEND TO FRONTEND ;)
 module.exports = router;

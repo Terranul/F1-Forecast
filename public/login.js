@@ -19,7 +19,7 @@ async function createAccount() {
         alert("You have created an acount (inserted a tuple)")
         await populateSessionCookies(result)
         localStorage.setItem("userid", username);
-        //window.location.href = "/dashboard.html";
+        window.location.href = "/dashboard.html";
 
     } else {
         document.getElementById("error-msg").innerText = "Username already taken"
@@ -51,10 +51,11 @@ async function loginUser() {
 // data is the raw result of calling fetch 
 async function populateSessionCookies(data) {
     let result = await data.json()
-    let sessionId = result.sessionId
+    let sessionId = result.sessionToken
     let userId = result.userId
     const cookieString = `id=${sessionId}; user_name=${userId}; Path=/`
     console.log("cookie string:" + cookieString)
-    document.cookie = cookieString
+    document.cookie = `id=${sessionId}; Path=/`
+    document.cookie = `user_name=${userId}; Path=/`
 }
 

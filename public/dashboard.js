@@ -7,6 +7,8 @@ document.addEventListener("DOMContentLoaded", getfriendInformation);
 document.addEventListener("DOMContentLoaded", populateAvgNationality)
 document.addEventListener("DOMContentLoaded", populateAvgTeam)
 
+document.getElementById("logout-button").addEventListener("click", logout)
+
 
 /*
     For some reason I stupidly put all of the methods here, which means that some id's won't exist until you click into a specific page on the 
@@ -293,6 +295,18 @@ function getTeamDiv(value) {
     div.appendChild(season);
 
     return div;
+}
+
+// all cookies are made to expire, session in the db is killed, local storage is cleared, and user is sent back to login screen
+async function logout() {
+    await fetch(`/users/${localStorage.getItem("userid")}/sessions`, {
+        method: "DELETE",
+        headers: {
+            "Content-Type": "application/json"
+        }
+    });
+    localStorage.clear()
+    window.location.href = "../";
 }
 
 

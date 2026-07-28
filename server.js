@@ -26,6 +26,7 @@ console.log("testing")
 
 // mount the router
 app.use('/', authMiddleware.authenticateSession)
+app.use('/users/', authMiddleware.authTailoredUser)
 app.use('/', appController);
 
 // ----------------------------------------------------------
