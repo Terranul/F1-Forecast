@@ -36,21 +36,27 @@ const parseCookie = str =>
 // path is the string representation of the endpoint address
 // method is the REST protocol (PUT, GET..ect) in string form (all caps)
 function isAcceptedEndpoint(path, method) {
-    return /^\/users\/.*\/login$/.test(path) || 
-           (/^\/users\/.*$/.test(path) && method === "PUT")
+    return /^\/users\/.*\/login$/.test(path) || (/^\/users\/.*$/.test(path) && method === "PUT")
+           || (/^\/dashboard\/.*$/.test(path)) // uncomment for debugging (allows the server to serve all html files without doing auth (for 403 issues))
+}
+
+// in the future maybe each user could have a clearance status 
+function isPrivilegedUser(userId) {
+    return userId == "admin!userid"
 }
 
 // for endpoints that access or modify user information (/user) we need to also make sure that the current session matches
 async function authTailoredUser(req, res, next) {
-    if (isAcceptedEndpoint(req.originalUrl, req.method)) {
+    const sessionInfo = parseCookie(req.get("Cookie"))
+    const userHeader = sessionInfo.user_name
+    if (isAcceptedEndpoint(req.originalUrl, req.method) || isPrivilegedUser(userHeader)) {
+        console.log("accepted endpoint")
         next()
         return
     }
     // will  always run after authenticate session has run so we can make assumptions
     // - we know that the username and the session id in the cookies matches the db 
     // - if the path username matches the cookies username we know the path username and cookies sessionId matches the db
-    const sessionInfo = parseCookie(req.get("Cookie"))
-    const userHeader = sessionInfo.user_name
     const userPath = parseRawUrl(req.originalUrl)
     console.log("test userHeader=" + userHeader + "and path user id = " + userPath + "path is " + req.originalUrl)
     if (userHeader == userPath + "!userid") {

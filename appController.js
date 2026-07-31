@@ -128,6 +128,8 @@ router.get("/gooddriver", sessionController.top15EveryTrack);
 
 router.delete("/users/:user/sessions", authController.endSession)
 
+router.get("/appsessions", authController.getSessions)
+
 //TODO : add frIEND TO FRONTEND ;)
 module.exports = router;
 

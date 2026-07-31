@@ -1,7 +1,9 @@
 const express = require('express');
 const appController = require('./appController');
+const fileController = require('./private/fileRouter')
 const authMiddleware = require('./middleware/authMiddleware')
-//const cookieParser = require("cookie-parser");
+
+require('./private/fileController') // only here to run the global scope of fileController
 
 // Load environment variables from .env file
 // Ensure your .env file has the required database credentials.
@@ -22,12 +24,12 @@ app.use(express.json());             // Parse incoming JSON payloads
 // app.get('/', (req, res) => {
 //     res.sendFile(__dirname + '/public/DEFAULT_FILE_NAME.html');
 // });
-console.log("testing")
 
 // mount the router
 app.use('/', authMiddleware.authenticateSession)
 app.use('/users/', authMiddleware.authTailoredUser)
 app.use('/', appController);
+app.use('/', fileController)
 
 // ----------------------------------------------------------
 // Starting the server

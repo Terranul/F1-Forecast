@@ -9,6 +9,13 @@ async function endSession(req, res) {
     res.status(204).send()
 }
 
+async function getSessions(req, res) {
+    console.log("hit get sessions")
+    let sessions = await appService.executeSql(`SELECT * FROM APP_SESSION`)
+    res.status(200).json(sessions.rows)
+}
+
 module.exports = {
-    endSession
+    endSession,
+    getSessions
 }
