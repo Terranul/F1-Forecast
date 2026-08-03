@@ -8,18 +8,19 @@ console.log("testing")
    I've replaced all of the dynamic fields in the html file (like the username, and scores) with a ${} so we can use the http module to edit it
 */
 
-const fileCache = Map()
+const fileCache = new Map()
 
 const PATH_ROOT = "private/siteFiles/"
 
 // files that are expected to be accessed many times, so we'll load them directly into memory
-const importantFiles = ["F1-info.html"]
+const importantFiles = ["F1-info.html", "dashboard.js"]
 
 loadFiles()
 
 function loadFiles() {
-    for (file in importantFiles) {
-        fileCache[file] = [fs.readFileSync(PATH_ROOT + file + ".html", "utf8")]
+    for (file of importantFiles) {
+        console.log("loading into memory contents of file with path: " + PATH_ROOT + file + " ex:: " + file)
+        fileCache.set(file, fs.readFileSync(PATH_ROOT + file, "utf8"));
     }
 }
 
@@ -34,11 +35,13 @@ function isHtmlRequest(file) {
 
 // file must include extension
 function setHeader(file, res) {
-    switch(file) {
-        case /^.*\.js$/.test(file):
-            return res.setHeader('Content-Type', 'text/javascript; charset=utf-8')
-        case /^.*\.css$/.test(file):
-            return res.setHeader('Content-Type', 'css/javascript; charset=utf-8')
+    console.log("input: " + file)
+    if (/^.*\.js$/.test(file)) {
+        return res.setHeader('Content-Type', 'application/javascript; charset=utf-8')
+    } else if (/^.*\.css$/.test(file)) {
+        return res.setHeader('Content-Type', 'text/css; charset=utf-8')
+    } else {
+        return res.setHeader('Content-Type', 'text/html; charset=utf-8')
     }
 }
 
@@ -46,39 +49,17 @@ function setHeader(file, res) {
 
 function getFile(req, res) {
     const file = isHtmlRequest(req.params.file) ? req.params.file + "html" : req.params.file
+    console.log("received req for file: " + file)
+    setHeader(file, res)
     if (fileCache.has(file)) {
         return res.send(fileCache.get(file))
     } else {
-        return res.pipe(getFileReadingStream(file))
+        return getFileReadingStream(file).pipe(res)
     }
-}
-
-// file mustn't contain the .html 
-function getReadingStreams(file) {
-    var result = [fs.createReadStream(PATH_ROOT + file + ".html")]
-    if (pairMap.has(file)) {
-        for (reqFile in pairMap.get(file)) {
-            result.append(fs.createReadStream(PATH_ROOT + reqFile))
-        }
-    } else {
-        // throw
-    }
-    return result
-}
-
-function getDashBoardFile(req, res) {
-    const file = req.params.file
-    
-}
-
-
-
-function getF1Info(req, res) {
-    res.send(f1_info_html)
 }
 
 module.exports = {
-    getF1Info
+    getFile
 }
 
 

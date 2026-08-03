@@ -26,8 +26,8 @@ app.use(express.json());             // Parse incoming JSON payloads
 // });
 
 // mount the router
-app.use('/', authMiddleware.authenticateSession)
-app.use('/users/', authMiddleware.authTailoredUser)
+// app.use('/', authMiddleware.authenticateSession) // comment out this and the one below to remove authentication
+// app.use('/users/', authMiddleware.authTailoredUser)
 app.use('/', appController);
 app.use('/', fileController)
 
