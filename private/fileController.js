@@ -13,7 +13,7 @@ const fileCache = new Map()
 const PATH_ROOT = "private/siteFiles/"
 
 // files that are expected to be accessed many times, so we'll load them directly into memory
-const importantFiles = ["F1-info.html", "dashboard.js"]
+const importantFiles = ["F1-info.html", "dashboard.js", "index.html", "login.js", "scripts.js"]
 
 loadFiles()
 
@@ -45,20 +45,37 @@ function setHeader(file, res) {
     }
 }
 
-///^\/dashboard\/.*$/
+// a file path like /private/siteFiles/../fileRouter.js would be valid without sanatization
+// we want the user to only find files within the siteFiles folder
+function sanatizeInput(path) {
+    return path.replaceAll("..", "")
+}
 
 function getFile(req, res) {
-    const file = isHtmlRequest(req.params.file) ? req.params.file + "html" : req.params.file
+    const file = isHtmlRequest(req.params.file) ? sanatizeInput(req.params.file) + ".html" : sanatizeInput(req.params.file)
     console.log("received req for file: " + file)
     setHeader(file, res)
     if (fileCache.has(file)) {
         return res.send(fileCache.get(file))
     } else {
-        return getFileReadingStream(file).pipe(res)
+        const stream = getFileReadingStream(file)
+        stream.on("error", () => {
+            res.status(404).send()
+        })
+        stream.pipe(res)
+    }
+}
+
+function getLandingPage(req, res) {
+    if (fileCache.has("index.html")) {
+        return res.send(fileCache.get("index.html"))
+    } else {
+        return res.status(500).send()
     }
 }
 
 module.exports = {
+    getLandingPage,
     getFile
 }
 
