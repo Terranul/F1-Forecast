@@ -37,7 +37,7 @@ const parseCookie = str =>
 // method is the REST protocol (PUT, GET..ect) in string form (all caps)
 function isAcceptedEndpoint(path, method) {
     return /^\/users\/.*\/login$/.test(path) || (/^\/users\/.*$/.test(path) && method === "PUT")
-           || (/^\/dashboard\/.*$/.test(path)) // uncomment for debugging (allows the server to serve all html files without doing auth (for 403 issues))
+           || (/^\/dashboard\/.*$/.test(path)) || path == "/" || path == "/file/login.js" // uncomment for debugging (allows the server to serve all html files without doing auth (for 403 issues))
 }
 
 // in the future maybe each user could have a clearance status 
@@ -47,7 +47,11 @@ function isPrivilegedUser(userId) {
 
 // for endpoints that access or modify user information (/user) we need to also make sure that the current session matches
 async function authTailoredUser(req, res, next) {
-    const sessionInfo = parseCookie(req.get("Cookie"))
+    const cookies = req.get("Cookie")
+    if (cookies == undefined) {
+        return next()
+    }
+    const sessionInfo = parseCookie(cookies)
     const userHeader = sessionInfo.user_name
     if (isAcceptedEndpoint(req.originalUrl, req.method) || isPrivilegedUser(userHeader)) {
         console.log("accepted endpoint")
@@ -83,7 +87,26 @@ function parseRawUrl(url) {
     }
 }
 
+function fileRedirect(req, res, next) {
+    console.log("entered with:" + req.originalUrl)
+    // the interesting thing here is that we will still have the regular middelware that checks if the session matches
+    // to determine if the user is logged in, all we need to do is check if the cookies are not undefined and that they include a username and sessionid
+    if (!isacceptedFile(req.originalUrl) && req.get("Cookie") === undefined) {
+        console.log("redirected")
+        res.setHeader("Location", "/"); // tells the browser to redirect
+        res.status(302).send()
+    } else {
+        console.log("passed the file redirect")
+        next()
+    }
+}
+
+function isacceptedFile(path) {
+    return path == "/file/login.js" || path == "/file/scripts.js" || path == "/file/index.html"
+}
+
 module.exports = {
     authenticateSession,
-    authTailoredUser
+    authTailoredUser,
+    fileRedirect
 }
