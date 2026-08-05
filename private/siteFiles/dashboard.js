@@ -71,7 +71,10 @@ function getOddsDiv(odd) {
     odds.textContent = odd.odd;
     const button = document.createElement("button");
     button.textContent = "Make Prediction"
-    // TODO: add event listener on button that will put the prediction into db when clicked (use prediciton endpoint ben)
+    button.addEventListener("click", () => {
+        window.location.href = "/file/prediction"
+        storePredictionInfo("driverodds", odd.driverid, odd.odd)
+    })
     div.appendChild(description);
     div.appendChild(odds);
     div.appendChild(button);
@@ -109,7 +112,10 @@ function getTeamOddsDiv(odd) {
     odds.textContent = odd.odds;
     const button = document.createElement("button");
     button.textContent = "Make Prediction"
-    // TODO: add event listener on button that will put the prediction into db when clicked
+    button.addEventListener("click", () => {
+        window.location.href = "/file/prediction"
+        storePredictionInfo("teamraceodds", odd.teamName, odd.odds)
+    })
     div.appendChild(description);
     div.appendChild(odds);
     div.appendChild(button);
@@ -147,11 +153,20 @@ function getPodiumOddsDiv(odd) {
     odds.textContent = odd.odds;
     const button = document.createElement("button");
     button.textContent = "Make Prediction"
-    // TODO: add event listener on button that will put the prediction into db when clicked
+    button.addEventListener("click", () => {
+        window.location.href = "/file/prediction"
+        storePredictionInfo("podiumodds", odd.name, odd.odd)
+    })
     div.appendChild(description);
     div.appendChild(odds);
     div.appendChild(button);
     return div;
+}
+
+function storePredictionInfo(category, target, odds) {
+    localStorage.setItem("prediction_category_selected", category)
+    localStorage.setItem("prediction_target_selected", target)
+    localStorage.setItem("prediction_odds_selected", odds)
 }
 
 async function getfriendInformation() {

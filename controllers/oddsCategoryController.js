@@ -8,30 +8,29 @@ const appService = require('../appService');
 
 async function getOdds(req, res) {
     const categoryid = req.params.categoryid;
-    console.log(categoryid)
-    console.log(JSON.stringify(req.body))
-    let response = {};
+
+    console.log(categoryid);
+    console.log(JSON.stringify(req.body));
+
     try {
-        switch (categoryid) {
-            case "driverodds":
-                const driverData = await oddsGenerator.calculateDriverOddsForRace(req.body.trackname, req.body.season);
-                response = await formatResponse(driverData, categoryid);
-                break;
-            case "teamraceodds":
-                const teamData = await oddsGenerator.getOddsForTopPoints(req.body.season);
-                response = await formatResponse(teamData, categoryid);
-                break;
-            case "podiumodds":
-                const podiumData = await oddsGenerator.getOddsForPodiums(req.body.season);
-                response = await formatResponse(podiumData, categoryid);
-                break;
-        }
+        const rawData = await oddsGenerator.getOddsForCategory(
+            categoryid,
+            req.body.trackname ?? null,
+            req.body.season
+        );
+
+        const response = await formatResponse(rawData, categoryid);
+
+        res.status(200).json(response);
     } catch (error) {
-        console.log(error)
-        res.status(500).json({error: "internal server error"})
-        return;
+        console.log(error);
+
+        if (error.message.startsWith('Unknown category')) {
+            return res.status(400).json({ error: 'invalid category' });
+        }
+
+        return res.status(500).json({ error: 'internal server error' });
     }
-    res.status(200).json(response);
 }
 
 async function formatResponse(data, categoryid) {

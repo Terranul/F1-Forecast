@@ -239,10 +239,43 @@ async function getOddsForPodiums(season) {
     return returnData
 }
 
+// trackname can be null
+async function getOddsForCategory(category, trackname, season) {
+    switch (category) {
+        case 'driverodds':
+            return calculateDriverOddsForRace(trackname, season);
+
+        case 'teamraceodds':
+            return getOddsForTopPoints(season);
+
+        case 'podiumodds':
+            return getOddsForPodiums(season);
+
+        default:
+            throw new Error(`Unknown category: ${category}`);
+    }
+}
+
+async function getOddsForCategoryEntry(category, trackname, season, target) {
+    const categoryOdds = await getOddsForCategory(category, trackname, season)
+    const result = categoryOdds.find((cur, index, obj) => {
+        if (cur.target == target) {
+            return cur.odds
+        }
+    }) 
+    if (result == undefined) {
+        throw new Error(`Unknown value: ${value}`);
+    } else {
+        return result
+    }
+}
+
 
 module.exports = {
     calculateDriverOddsForRace,
     getOddsForTopPoints,
     generateCircuitTimeOdds,
-    getOddsForPodiums
+    getOddsForPodiums,
+    getOddsForCategory,
+    getOddsForCategoryEntry
 }

@@ -1,5 +1,9 @@
-const express = require('express');
+const oddsGenerator = require("../prediction-engine/race-odds")
 const appService = require('../appService');
+
+// IMPORTANT SCHEMA INFO
+// Each prediction has a primary key that consists of: TRACKNAME, SEASON, DRIVERID
+// This is meant to point to the RACE_RESULT table
 
 /*
     Format for req body:
@@ -12,20 +16,37 @@ const appService = require('../appService');
         odds_value: number,
     }
 */
-async function putPrediction(req, res) {
-    const values = req.body;
-     values.app_userid = req.params.user + "!userid";
-     if (Object.keys(values).length !== 10) {
-        res.status(422).json({error: "missing a required field"});
-        return;
+
+
+/*
+    Format for req body: 
+    {
+        categoryid: string
+        prediction_value: string, 
+        wager: number
+        season: number,
+        trackname: string
+        driverid: string (or null)
     }
+*/
+
+async function putPrediction(req, res) {
+    const predictionInfo = req.body
+    // populate the remaining fields
+    predictionInfo[app_userid] = req.params.user + "!userid"
     try {
-        await appService.insertToTable("PREDICTION", values)
-        res.status(200).json(values);
-    } catch (err) {
-        console.log("error when putting prediction:" + err)
-        res.status(500).json({error: "internal server error"})
-        return
+        const odds = await oddsGenerator.getOddsForCategoryEntry(
+                        predictionInfo.category, 
+                        predictionInfo.trackname, 
+                        predictionInfo.season, 
+                        predictionInfo.prediction_value)
+        predictionInfo[date_filed] = new Date()
+        predictionInfo[time_filed] = null // TODO becuase idk how to deal with timestamps
+        predictionInfo[predictionid] = new Date().toISOString + req.params.user + predictionInfo.prediction_value
+        await appService.insertToTable("PREDICTION", predictionInfo)
+        res.status(202).send()
+    } catch {
+        res.status(400).json({error: "Invalid prediction target"})
     }
 }
 
