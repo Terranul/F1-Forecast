@@ -26,26 +26,27 @@ const appService = require('../appService');
         wager: number
         season: number,
         trackname: string
-        driverid: string (or null)
     }
 */
 
 async function putPrediction(req, res) {
     const predictionInfo = req.body
     // populate the remaining fields
-    predictionInfo[app_userid] = req.params.user + "!userid"
+    predictionInfo["app_userid"] = req.params.user + "!userid"
     try {
         const odds = await oddsGenerator.getOddsForCategoryEntry(
-                        predictionInfo.category, 
+                        predictionInfo.categoryid, 
                         predictionInfo.trackname, 
                         predictionInfo.season, 
                         predictionInfo.prediction_value)
-        predictionInfo[date_filed] = new Date()
-        predictionInfo[time_filed] = null // TODO becuase idk how to deal with timestamps
-        predictionInfo[predictionid] = new Date().toISOString + req.params.user + predictionInfo.prediction_value
+        predictionInfo["date_filed"] = new Date()
+        predictionInfo["time_filed"] = new Date // TODO becuase idk how to deal with timestamps
+        predictionInfo["predictionid"] = new Date().toISOString() + req.params.user + predictionInfo.prediction_value
+        predictionInfo["odds_value"] = odds.odds
         await appService.insertToTable("PREDICTION", predictionInfo)
         res.status(202).send()
-    } catch {
+    } catch(err) {
+        console.log(err)
         res.status(400).json({error: "Invalid prediction target"})
     }
 }

@@ -49,7 +49,7 @@ async function calculateDriverOddsForRace(track_name, season) {
     const activeDrivers = await appService.executeSql(sqlActiveDrivers)
     for (const driver_info of activeDrivers.rows) {
         const odds = await calculateRaceOdd(driver_info.DRIVERID, track_name);
-        oddsData.push({driverid: driver_info.DRIVERID, odd: odds})
+        oddsData.push({target: driver_info.DRIVERID, odds: odds})
     }
     return formatOdds(oddsData)
 }
@@ -57,12 +57,12 @@ async function calculateDriverOddsForRace(track_name, season) {
 // mentally prepare yourself before reading how I'm calculating odds
 function formatOdds(data) {
     // below is an abomination, but idc
-    const largestValue = Math.max(...data.map((value) => value.odd)) // spread to turn into individual arguments
+    const largestValue = Math.max(...data.map((value) => value.odds)) // spread to turn into individual arguments
     return data.map((value) => {
-        if (value.odd === 0 || value.odd === null) {
+        if (value.odds === 0 || value.odds === null) {
             return largestValue;
         } else {
-            value.odd = largestValue/value.odd;
+            value.odds = largestValue/value.odds;
             return value;
         }
     }) 
@@ -91,7 +91,7 @@ async function getOddsForTopPoints(season) {
         if (team.POINTS === 0) {odds = totalPointOverall} // sad :(
         if (odds <= 1) {odds = 1.02}
         returnData.push({
-            teamName: team.NAME,
+            target: team.NAME,
             totalPoints: team.POINTS,
             odds: odds 
         })
@@ -230,7 +230,7 @@ async function getOddsForPodiums(season) {
     console.log(JSON.stringify(podiumData))
     for (const driver of podiumData) {
         returnData.push({
-            name: driver.FULLNAME,
+            target: driver.FULLNAME,
             seasonPodiumFinishes: driver.PODIUMS,
             odds: driver.PODIUMS // potentially unbalanced but what the heck
         })

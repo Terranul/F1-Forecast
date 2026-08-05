@@ -66,14 +66,14 @@ async function getRaceOddsInfo() {
 function getOddsDiv(odd) {
     const div = document.createElement("div");
     const description = document.createElement("p");
-    description.textContent = odd.driverid;
+    description.textContent = odd.target;
     const odds = document.createElement("p");
-    odds.textContent = odd.odd;
+    odds.textContent = odd.odds;
     const button = document.createElement("button");
     button.textContent = "Make Prediction"
     button.addEventListener("click", () => {
         window.location.href = "/file/prediction"
-        storePredictionInfo("driverodds", odd.driverid, odd.odd)
+        storePredictionInfo("driverodds", odd.target, odd.odds)
     })
     div.appendChild(description);
     div.appendChild(odds);
@@ -106,15 +106,15 @@ async function getTeamOddsInfo() {
 function getTeamOddsDiv(odd) {
     const div = document.createElement("div");
     const description = document.createElement("p");
-    description.textContent = odd.teamName;
+    description.textContent = odd.target;
     const odds = document.createElement("p");
-    console.log("odds" + odd.odd)
+    console.log("odds" + odd.odds)
     odds.textContent = odd.odds;
     const button = document.createElement("button");
     button.textContent = "Make Prediction"
     button.addEventListener("click", () => {
         window.location.href = "/file/prediction"
-        storePredictionInfo("teamraceodds", odd.teamName, odd.odds)
+        storePredictionInfo("teamraceodds", odd.target, odd.odds)
     })
     div.appendChild(description);
     div.appendChild(odds);
@@ -147,15 +147,15 @@ async function getPodiumOddsInfo() {
 function getPodiumOddsDiv(odd) {
     const div = document.createElement("div");
     const description = document.createElement("p");
-    description.textContent = odd.name;
+    description.textContent = odd.target;
     const odds = document.createElement("p");
-    console.log("odds" + odd.odd)
+    console.log("odds" + odd.odds)
     odds.textContent = odd.odds;
     const button = document.createElement("button");
     button.textContent = "Make Prediction"
     button.addEventListener("click", () => {
         window.location.href = "/file/prediction"
-        storePredictionInfo("podiumodds", odd.name, odd.odd)
+        storePredictionInfo("podiumodds", odd.target, odd.odds)
     })
     div.appendChild(description);
     div.appendChild(odds);

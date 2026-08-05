@@ -6,6 +6,8 @@ Now we'll put only the index.html and login.js files in the public folder becuas
 
 Everything else will be put in the new private folder and when a request comes in to access the file, we can specifically check if the user has a session open before serving
 
+Also important is that for files not included in the important files array, you must restart the server to see a change that has been made in that file (as the file is preloaded when the server starts, compared to loading for every requst)
+
 
 CAT
 --<>()-   
