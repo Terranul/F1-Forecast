@@ -54,12 +54,10 @@ async function putPrediction(req, res) {
 async function getPredictions(req, res) {
     const app_userid = req.params.user  + "!userid" ;
     const sql = `SELECT *
-                 FROM APP_USER a 
-                JOIN PREDICTION p
-                ON a.app_userid = p.app_userid
-                WHERE APP_USERID= :app_userid`;
+                 FROM PREDICTION a 
+                 WHERE app_userid = :app_userid`;
 
-try { 
+    try { 
         const userPredictions = await appService.executeSqlBinding(sql, {app_userid: app_userid});
         res.status(200).json(userPredictions.rows)
     } catch {

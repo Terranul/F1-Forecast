@@ -42,7 +42,7 @@ async function getUserInformation() {
     localStorage.setItem("user", JSON.stringify(data));
 }
 
-function populateUserPage() {
+async function populateUserPage() {
     const user = JSON.parse(localStorage.getItem("user"));
     const value = document.getElementById("welcome-message");
     const points = document.getElementById("user-points");
@@ -52,4 +52,56 @@ function populateUserPage() {
     points.textContent = "Current Points: " + user.AMOUNT
     ranking.textContent = "Current Ranking: " + user.RANKING
     streak.textContent = "Current streak: " + user.STREAK 
+    await populateUsePredictions()
+}
+
+async function populateUsePredictions() {
+    const predictions = await getUserPredictions()
+    for (const prediction of predictions) {
+        document.getElementById("prediction-info").appendChild(getPredictionDiv(prediction))
+    }
+}
+
+function getPredictionDiv(predictionEntry) {
+    const predDiv = document.createElement("div")
+    const description = document.createElement("p")
+    description.textContent = prettifyPredictionCode(predictionEntry.CATEGORYID, predictionEntry.TRACKNAME, predictionEntry.PREDICTION_VALUE)
+    predDiv.appendChild(description)
+    const wager = document.createElement("p")
+    wager.textContent = "Wager: " + predictionEntry.WAGER + " points"
+    predDiv.appendChild(wager)
+    const odds = document.createElement("p")
+    odds.textContent = "Odds: " + predictionEntry.ODDS_VALUE
+    predDiv.appendChild(odds)
+    const toWin = document.createElement("p")
+    toWin.textContent = "To win: " + predictionEntry.WAGER*predictionEntry.ODDS_VALUE + " points"
+    predDiv.appendChild(toWin)
+    const divider = document.createElement("p")
+    divider.textContent = "----------------------------------------------"
+    predDiv.appendChild(divider)
+    return predDiv
+}
+
+function prettifyPredictionCode(code, raceName, target) {
+    switch (code) {
+        case "driverodds":
+            return `Predict driver ${target} to win the ${raceName}`
+        case "teamraceodds":
+            return `Predict team ${target} to accumulate the most points in the ${raceName}`
+        case "podiumodds":
+            return `Predict driver ${target} to miss the podium at the ${raceName}`
+        default:
+            return "stop messing with the local storage please and thank you"
+    }
+}
+
+async function getUserPredictions() {
+    const userid = localStorage.getItem("userid");
+    const result = await fetch(`/users/${userid}/predictions`, {
+        method: "GET",
+        headers: {
+            "Content-Type": "application/json"
+        }
+    });
+    return await result.json()
 }
