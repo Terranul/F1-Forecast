@@ -7,6 +7,7 @@ document.addEventListener("DOMContentLoaded", getfriendInformation);
 document.addEventListener("DOMContentLoaded", populateAvgNationality)
 document.addEventListener("DOMContentLoaded", populateAvgTeam)
 
+document.getElementById("my-predictions").addEventListener("click", navigateToUserPredictions)
 document.getElementById("logout-button").addEventListener("click", logout)
 
 
@@ -322,6 +323,10 @@ async function logout() {
     });
     localStorage.clear()
     window.location.href = "../";
+}
+
+async function navigateToUserPredictions() {
+    window.location.href = "/file/user-profile"
 }
 
 

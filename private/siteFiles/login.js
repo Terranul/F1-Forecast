@@ -5,7 +5,7 @@ async function createAccount() {
     const username = document.getElementById("username").value;
     const password = document.getElementById("password").value;
     const result = await fetch(`/users/${username}`, {
-        method: "PUT",
+        method: "POST",
         headers: {
         "Content-Type": "application/json"
         },

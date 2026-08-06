@@ -200,8 +200,10 @@ async function updateTable(tableName, mapping, qualification) {
     for (const key of Object.keys(mapping)) {
         sqlResult += `${key}='${mapping[key]}',`
     }
+    console.log(sqlResult)
     sqlResult = sqlResult.slice(0, -1)
     sqlResult += ' WHERE '
+    console.log(sqlResult)
     for (const key of Object.keys(qualification)) {
         sqlResult += `${key}='${qualification[key]}',`
     }

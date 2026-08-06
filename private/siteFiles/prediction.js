@@ -58,8 +58,6 @@ async function makePrediction() {
     } else {
         alert("Error with transaction. Funds remain in your account. Please try again shortly")
     }
-
-
 }
 
 function updateWagerMessage() {

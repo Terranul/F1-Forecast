@@ -96,7 +96,8 @@ router.get('/count-demotable', async (req, res) => {
 
 router.get('/users', userController.getUsers)
 router.get('/users/:user', userController.getUser)
-router.put('/users/:user', userController.putUser)
+router.post('/users/:user', userController.putUser) // adding user
+router.put('/users/:user', userController.editUser)
 router.get('/users/:user/friends', userController.getUserFriends)
 router.get('/users/:user/friends/:friend', userController.getUserFriends)
 router.put('/users/:user/friends/:friend', userController.putFriend)

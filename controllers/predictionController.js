@@ -44,11 +44,20 @@ async function putPrediction(req, res) {
         predictionInfo["predictionid"] = new Date().toISOString() + req.params.user + predictionInfo.prediction_value
         predictionInfo["odds_value"] = odds.odds
         await appService.insertToTable("PREDICTION", predictionInfo)
+        await editUserAmount(req.params.user, predictionInfo.wager)
         res.status(202).send()
     } catch(err) {
         console.log(err)
         res.status(400).json({error: "Invalid prediction target"})
     }
+}
+
+async function editUserAmount(user, wager) {
+    const result = console.log(JSON.stringify(await appService.executeSql(`SELECT AMOUNT FROM SCORE WHERE ACC='${user}acc'`)))
+    const userAmount = await appService.executeSql(`SELECT AMOUNT FROM SCORE WHERE ACC='${user}acc'`)
+    const updatedAmount = userAmount.rows[0].AMOUNT - wager
+    await appService.updateTable("SCORE", {"amount": updatedAmount}, {"acc": user+"acc"})
+
 }
 
 async function getPredictions(req, res) {

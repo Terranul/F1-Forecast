@@ -1,0 +1,83 @@
+body {
+    line-height: 1.5;
+    max-width: 700px;
+    margin: 0 auto;
+    padding: 2rem 1rem;
+}
+
+h1 {
+    margin-bottom: 1.5rem;
+}
+
+h3,
+h4 {
+    margin-top: 0;
+    margin-bottom: 0.75rem;
+}
+
+#information-container,
+#points-container,
+#edit-container,
+#prediction-info {
+    background: #2b2f36;
+    color: #e6dcc6;
+    padding: 1rem;
+    border-radius: 10px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+    margin-bottom: 1.5rem;
+}
+
+#information-container h3 {
+    margin: 0.5rem 0;
+}
+
+label {
+    display: block;
+    margin-bottom: 0.75rem;
+    color: #e6dcc6;
+}
+
+#information-container input,
+#points-container input,
+#edit-container input {
+    width: 100%;
+    padding: 0.5rem;
+    margin-top: 0.25rem;
+    box-sizing: border-box;
+
+    background: #3a4049;
+    color: #f2e8d5;
+    border: 1px solid #555;
+    border-radius: 6px;
+}
+
+button {
+    padding: 0.6rem 1rem;
+    border: none;
+    border-radius: 6px;
+    background: #d90429;
+    color: white;
+    cursor: pointer;
+}
+
+button:hover {
+    background: #b00321;
+}
+
+#edit-user {
+    margin-bottom: 1rem;
+}
+
+#edit-error {
+    color: #c00;
+    margin-bottom: 1.5rem;
+}
+
+#prediction-info > * {
+    padding: 0.75rem 0;
+    border-bottom: 1px solid rgba(230, 220, 198, 0.2);
+}
+
+#prediction-info > *:last-child {
+    border-bottom: none;
+}

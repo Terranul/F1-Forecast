@@ -10,12 +10,22 @@ async function getUser(req, res) {
     res.status(200).json(user);
 }
 
+async function editUser(req, res) {
+    try {
+        await appService.updateTable("APP_USER", req.body, {"app_userid": req.params.user + "!userid"})
+        res.status(202).json(await appService.executeSql`SELECT * FROM APP_USER WHERE APP_USERID = ${req.params.user + "!userid"}`)
+    } catch(err) {
+        console.log(err)
+        return req.status(400).send()
+    }
+}
+
 async function putUser(req, res) {
     const user_name = req.params.user;
     const password = req.body.password;
     console.log(user_name + password)
     const dateoffirstprediction = new Date(); // by default will represent the time of the code being executed
-    const app_userid = user_name + "!userid" // bro why did you do this instead of maybe just removing the fucking acc and app_userid from the schema????
+    const app_userid = user_name + "!userid" 
     const acc = user_name + "acc"; // only ever used internally, so no reason to make it any different
     try {
         // since the app_userid is the primary key, if a duplicate username will occur, the insertToTable will throw and we catch it here
@@ -206,6 +216,7 @@ async function removeFriend(req, res) {
 
 module.exports = {
     putFriend,
+    editUser,
     putUser,
     getUser,
     getUserFriends,

@@ -17,3 +17,8 @@ body {
     border-radius: 20px;
 }
 
+h2 {
+    color: darkred;
+    -webkit-text-stroke: 0.2px white;
+}
+
