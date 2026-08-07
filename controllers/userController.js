@@ -2,11 +2,20 @@ const appService = require('../appService');
 const userService = require('../services/userService')
 const sessionService = require('../authorization')
 
+function pruneData(isSignedIn, json) {
+    if (!isSignedIn) {
+        delete json.ACC
+        delete json.DATEOFFIRSTPREDICTION
+        delete json.APP_USERID
+    }
+    delete json.PASSWORD
+}
+
 async function getUser(req, res) {
     const user = await userService.getUser(req.params.user, null)
     console.log("getting user")
     console.log(JSON.stringify(user))
-    delete user.PASSWORD
+    pruneData(res.locals.isSignedIn, user)
     res.status(200).json(user);
 }
 
@@ -105,7 +114,7 @@ async function getUsers(req, res) {
     const allUsers = await appService.executeSql(`SELECT * FROM APP_USER`);
     // remove the password
     allUsers.rows.map((value) => {
-        delete value.PASSWORD
+        pruneData(res.locals.isSignedIn, value)
     })
     res.status(200).json(allUsers.rows);
 }
@@ -148,6 +157,9 @@ async function getUserArbitrary(req, res) {
                  FROM APP_USER NATURAL JOIN SCORE
                  WHERE ${restriction}`
     const result = await appService.executeSql(sql);
+    result.rows.map((value) => {
+        pruneData(res.locals.isSignedIn, value)
+    })
     console.log(JSON.stringify(result))
     res.status(200).json(result.rows);
 }

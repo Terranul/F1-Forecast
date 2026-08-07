@@ -55,6 +55,7 @@ async function authTailoredUser(req, res, next) {
     const userHeader = sessionInfo.user_name
     if (isAcceptedEndpoint(req.originalUrl, req.method) || isPrivilegedUser(userHeader)) {
         console.log("accepted endpoint")
+        res.locals.isSignedIn = true
         next()
         return
     }
@@ -64,10 +65,13 @@ async function authTailoredUser(req, res, next) {
     const userPath = parseRawUrl(req.originalUrl)
     console.log("test userHeader=" + userHeader + "and path user id = " + userPath + "path is " + req.originalUrl)
     if (userHeader == userPath + "!userid") {
+        res.locals.isSignedIn = true
         next()
         return
     } else {
-        return res.status(403).send()
+        // since this request is asking for information from another user, we will set a flag to tell the handler that they must remove sensitive information
+        res.locals.isSignedIn = false
+        next()
     }
 }
 
