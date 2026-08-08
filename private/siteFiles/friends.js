@@ -68,7 +68,7 @@ function renderSearchResults(data) {
 
 function getUserDiv(user) {
     const div = document.createElement("div");
-    const username = document.createElement("p");
+    const username = document.createElement("h3");
     username.textContent = "Username: " + user.USER_NAME;
     div.appendChild(username);
     const streak = document.createElement("p");
@@ -77,5 +77,26 @@ function getUserDiv(user) {
     const score = document.createElement("p");
     score.textContent = "Score: " + user.AMOUNT;
     div.appendChild(score);
+    const addFriend = document.createElement("button")
+    addFriend.textContent = "Add Friend"
+    addFriend.addEventListener("click", async () => {
+        await addFriendToProfile(user.USER_NAME, localStorage.getItem("userid"))
+    })
+    div.appendChild(addFriend)
     return div;
+}
+
+async function addFriendToProfile(friendUsername, username) {
+    const result = await fetch(`/users/${username}/friends/${friendUsername}`, {
+        method: "PUT",
+        headers: {
+            "Content-Type": "application/json"
+        }
+    });
+    if (result.status == 500) {
+        alert("Unable to add friend. Please try again")
+    } else {
+        alert(`You have added ${friendUsername} as a friend.`)
+        location.reload()
+    }
 }

@@ -4,11 +4,11 @@ const sessionService = require('../authorization')
 
 function pruneData(isSignedIn, json) {
     if (!isSignedIn) {
-        delete json.ACC
-        delete json.DATEOFFIRSTPREDICTION
-        delete json.APP_USERID
+        if (json.ACC != undefined) {delete json.ACC}
+        if (json.DATEOFFIRSTPREDICTION != undefined) {delete json.DATEOFFIRSTPREDICTION}
+        if (json.APP_USERID != undefined) {delete json.APP_USERID}
     }
-    delete json.PASSWORD
+    if (json.PASSWORD != undefined) {delete json.PASSWORD}
 }
 
 async function getUser(req, res) {

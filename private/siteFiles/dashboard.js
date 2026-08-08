@@ -214,6 +214,10 @@ function populateFriendsPage() {
             await rmFriend(localStorage.getItem("userid"),  friendUsername)
         })
 
+        const viewProfile = document.createElement("button")
+        removeFriend.textContent = "View Profile"
+
+        div.appendChild(viewProfile)
         div.appendChild(removeFriend);
         div.appendChild(name);
         div.appendChild(points);
