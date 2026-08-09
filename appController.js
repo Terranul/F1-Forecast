@@ -104,7 +104,7 @@ router.put('/users/:user/friends/:friend', userController.putFriend)
 
 router.get('/users/:user/predictions', predictionController.getPredictions)
 router.put('/users/:user/predictions/:prediction', predictionController.putPrediction)
-//router.delete('/users/:user/predictions/:prediction', predictionController.deletePrediction)
+router.delete('/users/:user/predictions/:prediction', predictionController.deletePrediction)
 router.get('/users/:user/predictions/:prediction/validate')
 
 router.post('/users/:user/login', userController.loginUser)

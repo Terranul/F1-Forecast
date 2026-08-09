@@ -215,7 +215,10 @@ function populateFriendsPage() {
         })
 
         const viewProfile = document.createElement("button")
-        removeFriend.textContent = "View Profile"
+        viewProfile.addEventListener("click", async () => {
+            window.location.href = "/file/other-profile"
+        })
+        viewProfile.textContent = "View Profile"
 
         div.appendChild(viewProfile)
         div.appendChild(removeFriend);
