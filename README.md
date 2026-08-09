@@ -17,7 +17,7 @@ You must download the specific oracle client software from https://www.oracle.co
 
 For MacOS:
 
-#!/bin/bash
+```#!/bin/bash
 
 # Set Oracle environment
 if [ -d "$HOME/[PATH TO YOUR ORACLE CLIENT SOFTWARE] ]; then
@@ -93,7 +93,7 @@ if [ $PORT -gt $MAX_PORT ]; then
     echo "No available port found between $START and $MAX_PORT"
     exit 1
 fi
-
+```
 
 
 
