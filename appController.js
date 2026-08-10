@@ -4,7 +4,7 @@ const f1apiService = require('./JolpiApi');
 const predictionController = require('./controllers/predictionController');
 const userController = require('./controllers/userController');
 const sessionController = require('./controllers/sessionController');
-const validationController = require('./controllers/validationController');
+const validationController = require('./validation-cron/validationScript');
 const oddsController = require('./controllers/oddsCategoryController')
 const authController = require('./controllers/authController')
 
