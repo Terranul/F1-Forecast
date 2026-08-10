@@ -1,9 +1,9 @@
 #!/bin/bash
 
 # Set Oracle environment
-if [ -d /opt/oracle/instantclient_23_7 ]; then
-    export ORACLE_HOME=/opt/oracle/instantclient_23_7
-    export LD_LIBRARY_PATH=$ORACLE_HOME
+if [ -d "$HOME/Documents/CS/instantclient_23_26" ]; then
+    export ORACLE_HOME="$HOME/Documents/CS/instantclient_23_26"
+    export DYLD_LIBRARY_PATH=$ORACLE_HOME
 elif [ -d /usr/lib/oracle/19.6/client64/lib ]; then
     export ORACLE_HOME=/usr/lib/oracle/19.6/client64
     # 19.* libraries will be already configured by ldconfig
@@ -24,8 +24,12 @@ export NODE_PATH=/cs/local/generic/lib/cs304/node_modules
 ENV_SERVER_PATH="./.env"
 
 # Check the database host name and port
-sed -i "/^ORACLE_HOST=/c\ORACLE_HOST=dbhost.students.cs.ubc.ca" $ENV_SERVER_PATH
-sed -i "/^ORACLE_PORT=/c\ORACLE_PORT=1522" $ENV_SERVER_PATH
+sed -i '' '/^ORACLE_HOST=/c\
+ORACLE_HOST=dbhost.students.cs.ubc.ca
+' "$ENV_SERVER_PATH"
+sed -i '' '/^ORACLE_PORT=/c\
+ORACLE_PORT=1522
+' "$ENV_SERVER_PATH"
 
 # Define starting port
 START=49152
@@ -48,7 +52,9 @@ while [ $PORT -le $MAX_PORT ]; do
         TEMP_PID=$!
 
         # Update the port number in the .env file
-        sed -i "/^PORT=/c\PORT=$PORT" $ENV_SERVER_PATH
+        sed -i '' "/^PORT=/c\\
+        PORT=$PORT
+        " "$ENV_SERVER_PATH"
         echo "Updated $ENV_SERVER_PATH with PORT=$PORT."
 
         # Kill the temporary process

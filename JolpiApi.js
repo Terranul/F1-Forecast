@@ -248,38 +248,45 @@ async function loadPractice(season) {
   The API returns pit-stop counts on /pitstops and driver-of-the-day is not
   in jolpi at all – we store null for those and you can fill them later.
 */
+async function insertRaceResults(results, pitstops, season, trackname) {
+    let count = 0;
+
+    for (const result of results) {
+        // totaltime comes as "1:35:20.123" – convert to Oracle INTERVAL string
+        const rawTime = result.Time?.time ?? null;
+        const totaltime = rawTime ? formatInterval(rawTime) : null;
+        const driverId = result.Driver.driverId;
+
+        await appService.insertToTable('RACE_RESULT', {
+            type: "RACE", // not in API
+            pitstops: pitstops[driverId],
+            position: parseInt(result.position, 10),
+            totaltime: totaltime,
+            season: season,
+            trackname: trackname,
+            driverid: driverId.substring(0, 25),
+            teamid: result.Constructor.constructorId.substring(0, 25),
+        });
+
+        count++;
+    }
+
+    return count;
+}
+
 async function loadRaceResults(season) {
     const raceResJson = await get(`${BASE_URL}/${season}/results.json?limit=1000`);
     const races = raceResJson.MRData.RaceTable.Races ?? [];
 
     let count = 0;
-    let raceNum = 0;
 
-
-
-for (let i = 0; i < races.length; i++) {
-    const pitstops = await getPitstops(season, i + 1);
-    const race = races[i];
-    const results = race.Results ?? [];
+    for (let i = 0; i < races.length; i++) {
+        const pitstops = await getPitstops(season, i + 1);
+        const race = races[i];
+        const results = race.Results ?? [];
         const trackname = race.raceName.substring(0, 50);
-        for (const result of results) {
-            // totaltime comes as "1:35:20.123" – convert to Oracle INTERVAL string
-            const rawTime = result.Time?.time ?? null;
-            const totaltime = rawTime ? formatInterval(rawTime) : null;
-            const driverId = result.Driver.driverId;
 
-            await appService.insertToTable('RACE_RESULT', {
-                type: "RACE",    // not in API
-                pitstops: pitstops[driverId],     
-                position: parseInt(result.position, 10),
-                totaltime: totaltime,
-                season:season,
-                trackname: trackname,
-                driverid: driverId.substring(0, 25),
-                teamid: result.Constructor.constructorId.substring(0, 25),
-            });
-            count++;
-        }
+        count += await insertRaceResults(results, pitstops, season, trackname);
     }
 
     console.log(`Inserted ${count} results for season ${season}`);
@@ -418,6 +425,23 @@ async function loadQualyfyingResults(season) {
         console.log(`\n=== Done loading season ${season} ===\n`);
     }
 
+
+    // --- cron job uses this to load the results for the current session
+    // IMPORTANT: this uses an entirely different way to determine what the current session is than the endpoint does. In the case
+    // that these two methods are not synced, this is probably why.
+    async function loadCurSessionResults() {
+        const currentYear = String(new Date().getFullYear());
+        const raceResJson = await get(`${BASE_URL}/${currentYear}/results.json?limit=30`);
+        const races = raceResJson.MRData.RaceTable.Races ?? [];
+        if (races[0] != undefined) {
+            const raceResult = races[0].Results
+            // pitstops are null becuase currently we can only get the pitstops per race, not per race per driver.
+            await insertRaceResults(raceResult, null, currentYear, races[0].trackname)
+        } else {
+            console.error("jolpi api has returned 0 entries for race results in the year " + currentYear)
+        }
+    }
+
     module.exports = {
         fetchAll,
         loadAllData,
@@ -430,5 +454,6 @@ async function loadQualyfyingResults(season) {
         loadPractice,
         loadRaceResults,
         loadSprintResults,
-        loadQualyfyingResults
+        loadQualyfyingResults,
+        loadCurSessionResults
     };

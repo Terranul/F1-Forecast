@@ -37,7 +37,7 @@ const parseCookie = str =>
 // method is the REST protocol (PUT, GET..ect) in string form (all caps)
 function isAcceptedEndpoint(path, method) {
     return /^\/users\/.*\/login$/.test(path) || (/^\/users\/.*$/.test(path) && method === "POST")
-           || (/^\/dashboard\/.*$/.test(path)) || path == "/" || path == "/file/login.js" // uncomment for debugging (allows the server to serve all html files without doing auth (for 403 issues))
+           || (/^\/dashboard\/.*$/.test(path)) || path == "/" || path == "/file/login.js" || path == "/initiate-demotable" // uncomment for debugging (allows the server to serve all html files without doing auth (for 403 issues))
 }
 
 // in the future maybe each user could have a clearance status 

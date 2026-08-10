@@ -6,19 +6,6 @@ const appService = require('../appService');
 // This is meant to point to the RACE_RESULT table
 
 /*
-    Format for req body:
-    {
-        categoryid: string,
-        driverid: string,
-        season: number,
-        trackname: string,
-        prediction_value: string,
-        odds_value: number,
-    }
-*/
-
-
-/*
     Format for req body: 
     {
         categoryid: string
@@ -30,6 +17,9 @@ const appService = require('../appService');
 */
 
 async function putPrediction(req, res) {
+    if (!process.env.ALLOW_PREDICTION) {
+        res.status(403).json({"message": "Making predictions is disabled between Saturday and Monday"})
+    }
     const predictionInfo = req.body
     // populate the remaining fields
     predictionInfo["app_userid"] = req.params.user + "!userid"

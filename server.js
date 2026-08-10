@@ -4,6 +4,7 @@ const fileController = require('./private/fileRouter')
 const authMiddleware = require('./middleware/authMiddleware')
 
 require('./private/fileController') // only here to run the global scope of fileController
+require('./validation-cron/validation')
 
 // Load environment variables from .env file
 // Ensure your .env file has the required database credentials.
