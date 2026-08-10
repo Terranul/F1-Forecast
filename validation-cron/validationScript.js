@@ -1,7 +1,7 @@
 // DEFUNCT code intending to allow endpoints for validation, now runs on cron
 
 
-const validation = require("../prediction-engine/prediction-validation")
+const validation = require("./prediction-validation")
 
 async function getValidateRaceOdds(req, res) {
     const predictionid = req.params.predictionid;

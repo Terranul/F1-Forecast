@@ -1,5 +1,5 @@
 const appService = require('../appService');
-const oddsGenerator = require("./race-odds")
+const oddsGenerator = require("../prediction-engine/race-odds")
 
 /*
     Whenever a user prediction is created we'll make sure to link it to it's specific category type
