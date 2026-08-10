@@ -1,3 +1,4 @@
+const { get } = require('../appController');
 const appService = require('../appService');
 
 
@@ -22,7 +23,21 @@ async function updateUser(mapping, username) {
     await appService.updateTable("APP_USER", mapping, {"USER_NAME": username})
 }
 
+// takes the current amount the user has and adds the amount given to it
+async function updateUserAmount(amount, username) {
+    const user = await getUser(username, null)
+    const newValue = user.AMOUNT + amount
+    await updateUser({amount: newValue}, username)
+}
+
+function convertAppUserIdToUsername(app_userid) {
+   // ".*!userid"
+   return app_userid.slice(0, -7)
+}
+
 module.exports = {
     getUser,
-    updateUser
+    updateUser,
+    updateUserAmount,
+    convertAppUserIdToUsername
 }
