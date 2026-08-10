@@ -32,18 +32,13 @@ router.post("/initiate-demotable", async (req, res) => {
     // await appService.insertToTable("CATEGORY", {categoryid: "teamraceodds", name: "Odds for a given team to accumulate the most points in a race"})
     // await appService.insertToTable("CATEGORY", {categoryid: "podiumodds", name: "Odds for a driver with podium finishes this season to finish off the podium"})
     //console.log('going to insert demotables')
-   const initiateResult = await appService.initiateDemotable();
+   //const initiateResult = await appService.initiateDemotable();
     //console.log('finished inserting demotables')
     if (true) {
        await appService.insertDemoData()
         //now test the db by inserting data after the fact
         try {
             await f1apiService.loadAllData(2026);
-       await f1apiService.loadAllData(2025);
-       await f1apiService.loadAllData(2024);
-       await f1apiService.loadAllData(2023);
-       await f1apiService.loadAllData(2021);
-       await f1apiService.loadAllData(2020);
         } catch(err) {
             console.log(err)
         }
