@@ -101,6 +101,7 @@ router.get('/users/:user/predictions', predictionController.getPredictions)
 router.put('/users/:user/predictions/:prediction', predictionController.putPrediction)
 router.delete('/users/:user/predictions/:prediction', predictionController.deletePrediction)
 router.get('/users/:user/predictions/:prediction/validate')
+router.post('/predictions/validate', predictionController.validatePredictions)
 
 router.post('/users/:user/login', userController.loginUser)
 router.put('/users/:user/score', userController.updateUserScores)

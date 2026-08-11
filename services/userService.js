@@ -27,7 +27,7 @@ async function updateUser(mapping, username) {
 async function updateUserAmount(amount, username) {
     const user = await getUser(username, null)
     const newValue = user.AMOUNT + amount
-    await updateUser({amount: newValue}, username)
+    await appService.updateTable("SCORE", {"amount": newValue}, {"acc": username + "acc"})
 }
 
 function convertAppUserIdToUsername(app_userid) {

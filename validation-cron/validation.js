@@ -18,17 +18,20 @@ cron.schedule("0 6 * * 1", async () => {
 })
 
 async function updateAllPredictions() {
+    console.log("entered update all predictions")
     // ensure we only validate predictions for which the race_session has occured already
     const sql = `SELECT *
                  FROM PREDICTION 
                  NATURAL JOIN RACE_SESSION
-                 WHERE DATE_FILED >= :monDate AND SESSION_DATE < :curDate AND STATUS='O'`
-    const predictions = appService.executeSqlBinding(sql, {monDate: getMonday(), curDate: new Date()})
+                 WHERE DATE_FILED >= :monDate AND STATUS='O'`
+    const predictions = await appService.executeSqlBinding(sql, {monDate: getMonday()})
     for (row of predictions.rows) {
+        console.log(`operating currently on prediction: ${JSON.stringify(row)}`)
         const categoryCode = row.CATEGORYID
         const validation = await validatePrediction(categoryCode, row.PREDICTIONID)
         const status = validation ? "C" : "F" // reminder C = completed, F = failed
-        await appService.executeSql(`UPDATE TABLE PREDICTION SET STATUS='${status}' WHERE PREDICTIONID='${row.PREDICTIONID}'`)
+        console.log("prediction received a status of: " + validation)
+        await appService.executeSql(`UPDATE PREDICTION SET STATUS='${status}' WHERE PREDICTIONID='${row.PREDICTIONID}'`)
         if (status == "C") {await updateUserScore(row)}
     }
 }
@@ -59,10 +62,14 @@ async function validatePrediction(categoryCode, predictionid) {
 
 function getMonday() {
     const currentNumber = new Date().getDay()
-    const diff = day === 0 ? -6 : 1 - day;
+    const diffFromMondayToSunday = 6
+    const diff = currentNumber + diffFromMondayToSunday
+    console.log("diff:" + diff)
     const monday = new Date()
-    monday.setDate(currentNumber + diff)
+    monday.setDate(monday.getDate() - diff)
     monday.setHours(6, 5, 0, 0)
+    console.log("Monday found: " + monday.toString())
     return monday
 }
 
+module.exports = {updateAllPredictions}

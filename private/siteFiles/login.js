@@ -1,5 +1,6 @@
 document.getElementById("login-button").addEventListener("click", loginUser);
 document.getElementById("create-button").addEventListener("click", createAccount);
+document.getElementById("update-prediction").addEventListener("click", validatePredictions)
 
 async function createAccount() {
     const username = document.getElementById("username").value;
@@ -57,5 +58,17 @@ async function populateSessionCookies(data) {
     console.log("cookie string:" + cookieString)
     document.cookie = `id=${sessionId}; Path=/`
     document.cookie = `user_name=${userId}; Path=/`
+}
+
+async function validatePredictions() {
+    const result = await fetch(`/predictions/validate`, {
+        method: "POST",
+        headers: {
+        "Content-Type": "application/json"
+        }
+    })
+    if (result.ok) {
+        document.getElementById("update-prediction").textContent = "Updated Predictions"
+    }
 }
 
