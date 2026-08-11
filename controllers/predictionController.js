@@ -1,5 +1,6 @@
 const oddsGenerator = require("../prediction-engine/race-odds")
 const appService = require('../appService');
+const validate = require('../validation-cron/validation')
 
 // IMPORTANT SCHEMA INFO
 // Each prediction has a primary key that consists of: TRACKNAME, SEASON, DRIVERID
@@ -145,10 +146,19 @@ async function getPerfectPredictors(req, res) {
         res.status(500).json({ error: "internal server error" });
     }
 }
+
+async function validatePredictions(req, res) {
+    await validate.updateAllPredictions()
+    res.status(200).send()
+}
+
+
+
 module.exports = {
     getPredictions,
     putPrediction,
     deletePrediction,
     updatePrediction,
-    getPerfectPredictors
+    getPerfectPredictors,
+    validatePredictions
 }
