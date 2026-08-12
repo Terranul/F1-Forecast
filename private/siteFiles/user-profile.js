@@ -58,7 +58,39 @@ async function populateUserPage() {
 async function populateUsePredictions() {
     const predictions = await getUserPredictions()
     for (const prediction of predictions) {
-        document.getElementById("prediction-info").appendChild(getPredictionDiv(prediction))
+        const predictionEntry = getPredictionDiv(prediction)
+        switch(prediction.STATUS) {
+            case "O":
+                const toWin = document.createElement("p")
+                toWin.textContent = "To win: " + prediction.WAGER*prediction.ODDS_VALUE + " points"
+                predictionEntry.appendChild(toWin)
+                predictionEntry.appendChild(getTextDivider())
+                document.getElementById("prediction-info").appendChild(predictionEntry)
+                break
+            case "C":
+                const winnings = document.createElement("p")
+                winnings.style.color = "green";
+                winnings.textContent = "Winnings: " + prediction.WAGER*prediction.ODDS_VALUE + " points"
+                predictionEntry.appendChild(winnings)
+                predictionEntry.appendChild(getTextDivider())
+                document.getElementById("completed-info").appendChild(predictionEntry)
+                break
+            case "F":
+                const losses = document.createElement("p")
+                losses.style.color = "red";
+                losses.textContent = "Losses: " + prediction.WAGER + " points"
+                predictionEntry.appendChild(losses)
+                predictionEntry.appendChild(getTextDivider())
+                document.getElementById("completed-info").appendChild(predictionEntry)
+                break
+            default:
+                const pending = document.createElement("p")
+                pending.style.color = "yellow";
+                pending.textContent = "The result is still pending, please contact our offices for more information."
+                predictionEntry.appendChild(pending)
+                predictionEntry.appendChild(getTextDivider())
+                document.getElementById("completed-info").appendChild(predictionEntry)
+        }
     }
 }
 
@@ -73,13 +105,33 @@ function getPredictionDiv(predictionEntry) {
     const odds = document.createElement("p")
     odds.textContent = "Odds: " + predictionEntry.ODDS_VALUE
     predDiv.appendChild(odds)
-    const toWin = document.createElement("p")
-    toWin.textContent = "To win: " + predictionEntry.WAGER*predictionEntry.ODDS_VALUE + " points"
-    predDiv.appendChild(toWin)
+    const status = document.createElement("p")
+    status.textContent = "Status: " + convertPredictionStatusCode(predictionEntry.STATUS)
+    predDiv.appendChild(status)
+    return predDiv
+}
+
+function convertPredictionStatusCode(status) {
+    switch(status) {
+        case "O":
+            return "Ongoing"
+        case "F":
+            return "Failed"
+        case "C":
+            return "Completed"
+        case "T":
+            return "Terminated"
+        case "U": 
+            return "Under Review"
+        default:
+            return "Pending"
+    }
+}
+
+function getTextDivider() {
     const divider = document.createElement("p")
     divider.textContent = "----------------------------------------------"
-    predDiv.appendChild(divider)
-    return predDiv
+    return divider
 }
 
 function prettifyPredictionCode(code, raceName, target) {

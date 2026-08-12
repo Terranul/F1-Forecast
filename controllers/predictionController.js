@@ -18,8 +18,8 @@ const validate = require('../validation-cron/validation')
 */
 
 async function putPrediction(req, res) {
-    if (!process.env.ALLOW_PREDICTION) {
-        res.status(403).json({"message": "Making predictions is disabled between Saturday and Monday"})
+    if (process.env.ALLOW_PREDICTION != null && !process.env.ALLOW_PREDICTION) {
+        return res.status(403).json({"message": "Making predictions is disabled between Saturday and Monday"})
     }
     const predictionInfo = req.body
     // populate the remaining fields
@@ -34,6 +34,7 @@ async function putPrediction(req, res) {
         predictionInfo["time_filed"] = new Date // TODO becuase idk how to deal with timestamps
         predictionInfo["predictionid"] = new Date().toISOString() + req.params.user + predictionInfo.prediction_value
         predictionInfo["odds_value"] = odds.odds
+        predictionInfo["status"] = "O"
         await appService.insertToTable("PREDICTION", predictionInfo)
         await editUserAmount(req.params.user, predictionInfo.wager)
         res.status(202).send()

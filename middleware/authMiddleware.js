@@ -1,4 +1,3 @@
-const express = require('express');
 const authService = require('../authorization')
 
 async function authenticateSession(req, res, next) {

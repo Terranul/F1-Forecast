@@ -22,8 +22,9 @@ h2 {
     -webkit-text-stroke: 0.2px white;
 }
 
-.predictions-container {
+#predictions-container {
     display: flex;
-    flex-direction: row;
+    gap: 20%;
+
 }
 
