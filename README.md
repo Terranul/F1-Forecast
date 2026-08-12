@@ -7,6 +7,8 @@ The domain of our project is in Sports, Fan Engagement and Community Building. I
 - Node.js backend with Express.js for API routing and endpoints
 - Uses session authentication and server-side rendering that are self built
 
+Note: The project imports the node-cron and cryptography packages, which the cs servers do not support and it is impossible to import them while on the servers. The project will still function on the CS servers, but you must comment out the validation.js file and it's dependants. The best method is to move the project off the CS server while still maintaining the same oracle connection with the instructions below.
+
 **How to Move Project From CS Servers to Local Machine**
 - Since the CS servers do not allow downloading additional packages or dependancies, specific parts of this project cannot function on the servers anymore (as of 08/09/26).
 You must download the specific oracle client software from https://www.oracle.com/database/technologies/instant-client onto your machine. After this, you can locally download the project and make a couple changes
