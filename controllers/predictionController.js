@@ -18,6 +18,7 @@ const validate = require('../validation-cron/validation')
 */
 
 async function putPrediction(req, res) {
+    // Note: comment out the != null part if you want to manually block predictions for testing purposes
     if (process.env.ALLOW_PREDICTION != null && !process.env.ALLOW_PREDICTION) {
         return res.status(403).json({"message": "Making predictions is disabled between Saturday and Monday"})
     }

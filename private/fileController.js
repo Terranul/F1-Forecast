@@ -1,4 +1,5 @@
 const fs = require("fs");
+const { get } = require("http");
 
 console.log("testing")
 
@@ -65,6 +66,19 @@ function getFile(req, res) {
     }
 }
 
+// only allow access to the actual prediction page during valid times, otherwise send the unavailable message
+function getPredictionPage(req, res) {
+    if (process.env.ALLOW_PREDICTION || process.env.ALLOW_PREDICTION == undefined)  {
+        return getFile(req, res)
+    } else {
+         const stream = getFileReadingStream("prediction-cooldown.html")
+         stream.on("error", () => {
+            res.status(404).send()
+        })
+        stream.pipe(res)
+    }
+}
+
 function getLandingPage(req, res) {
     if (fileCache.has("index.html")) {
         return res.send(fileCache.get("index.html"))
@@ -75,7 +89,8 @@ function getLandingPage(req, res) {
 
 module.exports = {
     getLandingPage,
-    getFile
+    getFile,
+    getPredictionPage
 }
 
 
